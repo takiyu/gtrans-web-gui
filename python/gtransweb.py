@@ -63,7 +63,10 @@ def gtrans_search(src_lang, tgt_lang, src_text, encoding='utf-8'):
     except Exception:
         return 'Error: Failed to access google translation website.'
     finally:
-        response.close()
+        try:
+            response.close()
+        except NameError:
+            pass
 
     html = html.decode(encoding)
 
