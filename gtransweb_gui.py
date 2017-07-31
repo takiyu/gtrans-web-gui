@@ -64,18 +64,19 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             self.hide()
 
 
-def get_selected_text():
+def get_selected_text(encoding):
     clip = app.clipboard()
     text = clip.text(QtGui.QClipboard.Selection)
     text = ' '.join(text.splitlines())
-    return text.encode('utf-8')
+    return text.encode(encoding)
 
 
 class SelectionChangedHandler():
-    def __init__(self, src_lang, tgt_lang, window, width=350, height=150,
-                 x_offset=20, y_offset=20, time_offset=1000):
+    def __init__(self, src_lang, tgt_lang, encoding, window, width=350,
+                 height=150, x_offset=20, y_offset=20, time_offset=1000):
         self.src_lang = src_lang
         self.tgt_lang = tgt_lang
+        self.encoding = encoding
         self.window = window
         self.width = width
         self.height = height
@@ -99,14 +100,15 @@ class SelectionChangedHandler():
             else:
                 return
         # Get new selected text
-        src_text = get_selected_text()
+        src_text = get_selected_text(self.encoding)
         if self.prev_src_text == src_text:
             return
         self.prev_src_text = src_text
 
         # Translate selected text
         logger.debug('Translate selected text')
-        tgt_text = gtrans_search(self.src_lang, self.tgt_lang, src_text)
+        tgt_text = gtrans_search(self.src_lang, self.tgt_lang, src_text,
+                                 self.encoding)
         self.window.set_text(tgt_text)
 
         # Set window position and size
@@ -128,15 +130,17 @@ if __name__ == '__main__':
                         help='Source language in `alone` mode')
     parser.add_argument('--tgt_lang', type=str, default='ja',
                         help='Target language in `alone` mode')
+    parser.add_argument('--encoding', type=str, default='utf-8',
+                        help='Text encoding used in python str')
     args = parser.parse_args()
 
     # Text and language information
-    src_lang, tgt_lang = args.src_lang, args.tgt_lang
+    src_lang, tgt_lang, encoding = args.src_lang, args.tgt_lang, args.encoding
 
     # Create window and handler
     window = GtransPopupWindow()
     selection_changed_handler = \
-        SelectionChangedHandler(src_lang, tgt_lang, window)
+        SelectionChangedHandler(src_lang, tgt_lang, encoding, window)
 
     # Set selection changed handler
     clip = app.clipboard()
