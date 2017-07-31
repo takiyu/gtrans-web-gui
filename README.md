@@ -1,8 +1,8 @@
 # Gtrans-Web-GUI #
 
-GUI helper for Google Translation.
+GUI helper for Google Translation Website.
 
-This application translate your copied or selected texts using Google Translation Website.
+This application translates your copied or selected texts using Google Translation Website.
 
 ## Dependency ##
 * Python (2.x or 3.x)
