@@ -22,20 +22,19 @@ if QtCore.QCoreApplication.startingUp():
     # First call
     app = QtWidgets.QApplication([sys.argv[0]])
 else:
-    # app is already created
+    # app is already created, so overwrite the following value
     app = None
 
 
 class GtransPopupWindow(QtWidgets.QMainWindow):
-    def __init__(self, title='GtransWeb', width=350, height=150, x_offset=20,
-                 y_offset=20):
+    def __init__(self, qsettings, title='GtransWeb', curpos_offset=(20, 20),
+                 default_size=(350, 150)):
         logger.debug('New window is created')
         super(GtransPopupWindow, self).__init__()
 
-        self.width = width
-        self.height = height
-        self.x_offset = x_offset
-        self.y_offset = y_offset
+        # Store arguments
+        self.qsettings = qsettings
+        self.curpos_offset = curpos_offset
 
         # Set window types
         self.setWindowFlags(
@@ -60,17 +59,23 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.central_widget.setContentsMargins(-5, -5, -5, -5)
         self.setCentralWidget(self.central_widget)
 
-        # Show
-        self.show()
+        # Set window size posoiShow
+        geom = self.qsettings.value("geometry")
+        if geom is None:
+            self.resize(default_size[0], default_size[1])
+            self.show_at_cursor()
+        else:
+            self.restoreGeometry(geom)
+            self.show()
 
     def set_text(self, text):
         self.textbox.setHtml(text)
 
     def show_at_cursor(self):
-        # Get cursor position
+        # Get cursor position and move
         pos = QtGui.QCursor().pos()
-        x, y = pos.x() + self.x_offset, pos.y() + self.y_offset
-        self.setGeometry(x, y, self.width, self.height)
+        self.move(pos.x() + self.curpos_offset[0],
+                  pos.y() + self.curpos_offset[1])
         # Show
         self.show()
 
@@ -79,6 +84,10 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         if event.key() == QtCore.Qt.Key_Escape:
             logger.debug('Hide the window')
             self.hide()
+
+    def closeEvent(self, event):
+        # Save current window size and position
+        self.qsettings.setValue("geometry", self.saveGeometry())
 
 
 def get_clipboard_text(clip_mode, encoding):
@@ -164,8 +173,11 @@ if __name__ == '__main__':
         logger.error('Unknown clip_mode: %d', args.clip_mode)
         exit(1)
 
+    # Qt settings
+    qsettings = QtCore.QSettings('gtransweb', 'gtanswebgui')
+
     # Create window and handler
-    window = GtransPopupWindow()
+    window = GtransPopupWindow(qsettings)
     clipboard_changed_handler = ClipboardChangedHandler(clip_mode, src_lang,
                                                         tgt_lang, encoding,
                                                         window)
