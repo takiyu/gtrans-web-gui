@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     # Text and language information
     src_lang, tgt_lang, src_text, encoding = \
-            args.src_lang, args.tgt_lang, args.src_text, args.encoding
+        args.src_lang, args.tgt_lang, args.src_text, args.encoding
 
     # Access translate.google.com
     tgt_text = gtrans_search(src_lang, tgt_lang, src_text, encoding)
