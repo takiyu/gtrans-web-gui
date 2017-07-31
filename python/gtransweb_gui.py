@@ -27,9 +27,15 @@ else:
 
 
 class GtransPopupWindow(QtWidgets.QMainWindow):
-    def __init__(self, title='GtransWeb'):
+    def __init__(self, title='GtransWeb', width=350, height=150, x_offset=20,
+                 y_offset=20):
         logger.debug('New window is created')
         super(GtransPopupWindow, self).__init__()
+
+        self.width = width
+        self.height = height
+        self.x_offset = x_offset
+        self.y_offset = y_offset
 
         # Set window types
         self.setWindowFlags(
@@ -54,8 +60,19 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.central_widget.setContentsMargins(-5, -5, -5, -5)
         self.setCentralWidget(self.central_widget)
 
+        # Show
+        self.show()
+
     def set_text(self, text):
         self.textbox.setHtml(text)
+
+    def show_at_cursor(self):
+        # Get cursor position
+        pos = QtGui.QCursor().pos()
+        x, y = pos.x() + self.x_offset, pos.y() + self.y_offset
+        self.setGeometry(x, y, self.width, self.height)
+        # Show
+        self.show()
 
     def keyPressEvent(self, event):
         # Exit with escape key
@@ -73,17 +90,12 @@ def get_clipboard_text(clip_mode, encoding):
 
 class ClipboardChangedHandler():
     def __init__(self, clip_mode, src_lang, tgt_lang, encoding, window,
-                 width=350, height=150, x_offset=20, y_offset=20,
                  time_offset=1000):
         self.clip_mode = clip_mode
         self.src_lang = src_lang
         self.tgt_lang = tgt_lang
         self.encoding = encoding
         self.window = window
-        self.width = width
-        self.height = height
-        self.x_offset = x_offset
-        self.y_offset = y_offset
         self.time_offset = time_offset
         self.query_deq = collections.deque()
         self.prev_src_text = ''
@@ -118,11 +130,7 @@ class ClipboardChangedHandler():
         # Set window position and size
         if not self.window.isVisible():
             logger.debug('Show the window')
-            pos = QtGui.QCursor().pos()
-            x, y = pos.x() + self.x_offset, pos.y() + self.y_offset
-            self.window.setGeometry(x, y, self.width, self.height)
-            # Show
-            self.window.show()
+            window.show_at_cursor()
 
 
 if __name__ == '__main__':
