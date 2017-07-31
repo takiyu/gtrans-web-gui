@@ -79,11 +79,11 @@ if __name__ == "__main__":
     # Argument
     parser = argparse.ArgumentParser(description='gtrans-web')
     parser.add_argument('--src_lang', type=str, default='auto',
-                        help='Source language in `alone` mode')
+                        help='Source language')
     parser.add_argument('--tgt_lang', type=str, default='auto',
-                        help='Target language in `alone` mode')
+                        help='Target language')
     parser.add_argument('--src_text', type=str, default='This is a pen.',
-                        help='Srouce text in `alone` mode')
+                        help='Srouce text')
     parser.add_argument('--encoding', type=str, default='utf-8',
                         help='Text encoding used in python str')
     args = parser.parse_args()
