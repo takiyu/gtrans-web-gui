@@ -64,16 +64,18 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             self.hide()
 
 
-def get_selected_text(encoding):
+def get_clipboard_text(clip_mode, encoding):
     clip = app.clipboard()
-    text = clip.text(QtGui.QClipboard.Selection)
+    text = clip.text(clip_mode)
     text = ' '.join(text.splitlines())
     return text.encode(encoding)
 
 
-class SelectionChangedHandler():
-    def __init__(self, src_lang, tgt_lang, encoding, window, width=350,
-                 height=150, x_offset=20, y_offset=20, time_offset=1000):
+class ClipboardChangedHandler():
+    def __init__(self, clip_mode, src_lang, tgt_lang, encoding, window,
+                 width=350, height=150, x_offset=20, y_offset=20,
+                 time_offset=1000):
+        self.clip_mode = clip_mode
         self.src_lang = src_lang
         self.tgt_lang = tgt_lang
         self.encoding = encoding
@@ -86,9 +88,11 @@ class SelectionChangedHandler():
         self.query_deq = collections.deque()
         self.prev_src_text = ''
 
-    def __call__(self):
-        self.query_deq.append(time.time())
-        QtCore.QTimer.singleShot(self.time_offset, self._translate)
+    def __call__(self, mode):
+        # Eliminate the clipboard mode
+        if mode == self.clip_mode:
+            self.query_deq.append(time.time())
+            QtCore.QTimer.singleShot(self.time_offset, self._translate)
 
     def _translate(self):
         # Disable old query
@@ -99,14 +103,14 @@ class SelectionChangedHandler():
                 self.query_deq.clear()
             else:
                 return
-        # Get new selected text
-        src_text = get_selected_text(self.encoding)
+        # Get new clipboard text
+        src_text = get_clipboard_text(self.clip_mode, self.encoding)
         if self.prev_src_text == src_text:
             return
         self.prev_src_text = src_text
 
-        # Translate selected text
-        logger.debug('Translate selected text')
+        # Translate clipboard text
+        logger.debug('Translate the text in clipboard')
         tgt_text = gtrans_search(self.src_lang, self.tgt_lang, src_text,
                                  self.encoding)
         self.window.set_text(tgt_text)
@@ -125,27 +129,43 @@ if __name__ == '__main__':
     logger.info('Start GtransWeb GUI')
 
     # Argument
-    parser = argparse.ArgumentParser(description='gtrans-web')
+    parser = argparse.ArgumentParser(
+        description='GtransWebGUI: GUI Helper for Google Translation Website.')
     parser.add_argument('--src_lang', type=str, default='auto',
                         help='Source language')
     parser.add_argument('--tgt_lang', type=str, default='ja',
                         help='Target language')
     parser.add_argument('--encoding', type=str, default='utf-8',
                         help='Text encoding used in python str')
+    parser.add_argument('--clip_mode', choices=['copy', 'select', 'findbuf'],
+                        default='select',
+                        help='Clipboard mode for translation trigger')
     args = parser.parse_args()
 
-    # Text and language information
+    # Language information
     src_lang, tgt_lang, encoding = args.src_lang, args.tgt_lang, args.encoding
+
+    # Clipboard mode
+    if args.clip_mode == 'copy':
+        clip_mode = QtGui.QClipboard.Clipboard
+    elif args.clip_mode == 'select':
+        clip_mode = QtGui.QClipboard.Selection
+    elif args.clip_mode == 'findbuf':
+        clip_mode = QtGui.QClipboard.FindBuffer
+    else:
+        logger.error('Unknown clip_mode: %d', args.clip_mode)
+        exit(1)
 
     # Create window and handler
     window = GtransPopupWindow()
-    selection_changed_handler = \
-        SelectionChangedHandler(src_lang, tgt_lang, encoding, window)
+    clipboard_changed_handler = ClipboardChangedHandler(clip_mode, src_lang,
+                                                        tgt_lang, encoding,
+                                                        window)
 
-    # Set selection changed handler
+    # Set clipboard changed handler
     clip = app.clipboard()
-    clip.selectionChanged.connect(selection_changed_handler)
+    clip.changed.connect(clipboard_changed_handler)
 
     # Start
-    logger.debug('Wait for selecting')
+    logger.debug('Wait for trigger: %s', args.clip_mode)
     app.exec_()

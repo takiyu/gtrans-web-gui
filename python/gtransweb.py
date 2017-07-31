@@ -80,7 +80,8 @@ def gtrans_search(src_lang, tgt_lang, src_text, encoding='utf-8'):
 
 if __name__ == "__main__":
     # Argument
-    parser = argparse.ArgumentParser(description='gtrans-web')
+    parser = argparse.ArgumentParser(
+        description='GtransWeb: Helper for Google Translation Website.')
     parser.add_argument('--src_lang', type=str, default='auto',
                         help='Source language')
     parser.add_argument('--tgt_lang', type=str, default='auto',
