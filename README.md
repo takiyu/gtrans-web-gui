@@ -2,6 +2,8 @@
 
 GUI helper for Google Translation.
 
+This application translate your selected texts using Google Translation Website.
+
 ## Dependency ##
 * Python (2.x or 3.x)
 * Qt5 (Python binding)
@@ -25,10 +27,10 @@ optional arguments:
 <img src="https://raw.githubusercontent.com/takiyu/gtrans-web-gui/master/screenshots/1.png">
 
 ## TODO ##
-* Support for Mac OS X and Windows.
-* Additional GUI, such as language selection, save settings and so on.
+*[ ] Support for Mac OS X and Windows.
+*[ ] Additional GUI, such as language selection, save settings and so on.
 
 ## Others ##
 This plugin is tested on few environments.
 
-I hope your pull requests.
+I hope your pull requests!
