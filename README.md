@@ -20,6 +20,13 @@ This application translate your copied or selected texts using Google Translatio
 ```bash
 $ python python/gtransweb_gui.py [-h] [--src_lang SRC_LANG]
                                  [--tgt_lang TGT_LANG] [--encoding ENCODING]
+                                 [--clip_mode {copy,select,findbuf}]
+
+# Example for Linux
+$ python python/gtransweb_gui.py
+
+#Example for Windows
+$ python python/gtransweb_gui.py --encoding shift-jis --clip_mode copy
 ```
 
 ## Arguments ##

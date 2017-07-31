@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 import argparse
 import collections
-import sys
+import os
 from PyQt5 import QtGui, QtCore, QtWidgets
+import sys
 from threading import Thread
 import time
 
@@ -26,6 +27,23 @@ else:
     app = None
 
 
+def get_window_flags():
+    common = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog
+    if os.name == 'nt':
+        # Windows
+        return common
+    else:
+        return common | QtCore.Qt.FramelessWindowHint
+
+
+def set_win_pos_windows(win_id, x, y, width, height):
+    import win32gui
+    import win32con
+    win32gui.SetWindowPos(win_id, win32con.HWND_TOPMOST, x, y, width, height,
+                          win32con.SWP_NOMOVE | win32con.SWP_NOSIZE |
+                          win32con.SWP_SHOWWINDOW)
+
+
 class GtransPopupWindow(QtWidgets.QMainWindow):
     def __init__(self, qsettings, title='GtransWeb', curpos_offset=(20, 20),
                  default_size=(350, 150)):
@@ -37,11 +55,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.curpos_offset = curpos_offset
 
         # Set window types
-        self.setWindowFlags(
-            QtCore.Qt.WindowStaysOnTopHint |
-            QtCore.Qt.FramelessWindowHint |
-            QtCore.Qt.Dialog
-        )
+        self.setWindowFlags(get_window_flags())
 
         # Window title
         self.setWindowTitle(title)
@@ -67,6 +81,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         else:
             self.restoreGeometry(geom)
             self.show()
+            self.raise_()
 
     def set_text(self, text):
         self.textbox.setHtml(text)
@@ -74,10 +89,17 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
     def show_at_cursor(self):
         # Get cursor position and move
         pos = QtGui.QCursor().pos()
-        self.move(pos.x() + self.curpos_offset[0],
-                  pos.y() + self.curpos_offset[1])
+        x, y = pos.x() + self.curpos_offset[0], pos.y() + self.curpos_offset[1]
+        if os.name == 'nt':
+            # Windows
+            win_size = self.size()
+            width, height = win_size.width(), win_size.height()
+            set_win_pos_windows(self.winId(), x, y, width, height)
+        else:
+            self.move(x, y)
         # Show
         self.show()
+        self.raise_()
 
     def keyPressEvent(self, event):
         # Exit with escape key
