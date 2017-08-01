@@ -21,12 +21,13 @@ This application translates your copied or selected texts using Google Translati
 $ python python/gtransweb_gui.py [-h] [--src_lang SRC_LANG]
                                  [--tgt_lang TGT_LANG] [--encoding ENCODING]
                                  [--clip_mode {copy,select,findbuf}]
+                                 [--buf_time BUF_TIME]
 
 # Example for Linux
 $ python python/gtransweb_gui.py
 
 #Example for Windows
-$ python python/gtransweb_gui.py --encoding shift-jis --clip_mode copy
+$ python python/gtransweb_gui.py --clip_mode copy --buf_time 0
 ```
 
 ## Arguments ##
@@ -34,9 +35,10 @@ $ python python/gtransweb_gui.py --encoding shift-jis --clip_mode copy
   -h, --help            show the help message and exit.
   --src_lang SRC_LANG   Source language.
   --tgt_lang TGT_LANG   Target language.
-  --encoding ENCODING   Text encoding used in python str.
+  --encoding ENCODING   Text encoding used in python str for input.
   --clip_mode {copy,select,findbuf}
                         Clipboard mode for translation trigger.
+  --buf_time BUF_TIME   Buffering time for clipboard.
 ```
 
 ## Screenshot ##

@@ -121,13 +121,13 @@ def get_clipboard_text(clip_mode, encoding):
 
 class ClipboardChangedHandler():
     def __init__(self, clip_mode, src_lang, tgt_lang, encoding, window,
-                 time_offset=1000):
+                 buf_time):
         self.clip_mode = clip_mode
         self.src_lang = src_lang
         self.tgt_lang = tgt_lang
         self.encoding = encoding
         self.window = window
-        self.time_offset = time_offset
+        self.buf_time = buf_time
         self.query_deq = collections.deque()
         self.prev_src_text = ''
 
@@ -135,14 +135,14 @@ class ClipboardChangedHandler():
         # Eliminate the clipboard mode
         if mode == self.clip_mode:
             self.query_deq.append(time.time())
-            QtCore.QTimer.singleShot(self.time_offset, self._translate)
+            QtCore.QTimer.singleShot(self.buf_time, self._translate)
 
     def _translate(self):
         # Disable old query
         called_time = self.query_deq.pop()
         if len(self.query_deq) > 0:
             # Overwrite too old query
-            if time.time() > called_time + self.time_offset + 1.0:
+            if time.time() > called_time + self.buf_time + 1.0:
                 self.query_deq.clear()
             else:
                 return
@@ -178,10 +178,13 @@ if __name__ == '__main__':
     parser.add_argument('--clip_mode', choices=['copy', 'select', 'findbuf'],
                         default='select',
                         help='Clipboard mode for translation trigger')
+    parser.add_argument('--buf_time', type=int, default=1000,
+                        help='Buffering time for clipboard')
     args = parser.parse_args()
 
     # Language information
-    src_lang, tgt_lang, encoding = args.src_lang, args.tgt_lang, args.encoding
+    src_lang, tgt_lang = args.src_lang, args.tgt_lang
+    encoding, buf_time = args.encoding, args.buf_time
 
     # Clipboard mode
     if args.clip_mode == 'copy':
@@ -201,7 +204,7 @@ if __name__ == '__main__':
     window = GtransPopupWindow(qsettings)
     clipboard_changed_handler = ClipboardChangedHandler(clip_mode, src_lang,
                                                         tgt_lang, encoding,
-                                                        window)
+                                                        window, buf_time)
 
     # Set clipboard changed handler
     clip = app.clipboard()
