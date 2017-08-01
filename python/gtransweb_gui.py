@@ -27,15 +27,6 @@ else:
     app = None
 
 
-def get_window_flags():
-    common = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog
-    if os.name == 'nt':
-        # Windows
-        return common
-    else:
-        return common | QtCore.Qt.FramelessWindowHint
-
-
 class GtransPopupWindow(QtWidgets.QMainWindow):
     def __init__(self, qsettings, title='GtransWeb', curpos_offset=(20, 20),
                  default_size=(350, 150)):
@@ -47,7 +38,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.curpos_offset = curpos_offset
 
         # Set window types
-        self.setWindowFlags(get_window_flags())
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
 
         # Window title
         self.setWindowTitle(title)
