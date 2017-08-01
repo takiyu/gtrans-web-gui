@@ -40,7 +40,8 @@ $ python python/gtransweb_gui.py -c copy -b 0
                                     Clipboard mode for translation trigger.
                                     'select' is valid on only Linux.
                                     (default: select)
-  -b BUF_TIME, --buf_time BUF_TIME  Buffering time for clipboard.  (default: 0)
+  -b BUF_TIME, --buf_time BUF_TIME  Buffering time for clipboard.
+                                    (default: 1000)
 ```
 
 ## Screenshot ##
