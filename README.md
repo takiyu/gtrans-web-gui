@@ -12,33 +12,34 @@ This application translates your copied or selected texts using Google Translati
 * [x] Linux Python 2.7
 * [x] Linux Python 3.6
 * [ ] Windows Python 2.x
-* [ ] Windows Python 3.x
+* [x] Windows Python 3.6
+* [x] Windows PowerShell Python 3.6
 * [ ] Mac OS Python 2.x
 * [ ] Mac OS Python 3.x
 
 ## Usage ##
 ```bash
-$ python python/gtransweb_gui.py [-h] [--src_lang SRC_LANG]
-                                 [--tgt_lang TGT_LANG] [--encoding ENCODING]
-                                 [--clip_mode {copy,select,findbuf}]
-                                 [--buf_time BUF_TIME]
+$ python python/gtransweb_gui.py [-h] [-s SRC_LANG] [-t TGT_LANG]
+                                 [--encoding ENCODING]
+                                 [-c {copy,select,findbuf}] [-b BUF_TIME]
 
 # Example for Linux
 $ python python/gtransweb_gui.py
 
-#Example for Windows
-$ python python/gtransweb_gui.py --clip_mode copy --buf_time 0
+# Example for Windows
+$ python python/gtransweb_gui.py -c copy -b 0
 ```
 
 ## Arguments ##
 ```
-  -h, --help            show the help message and exit.
-  --src_lang SRC_LANG   Source language.
-  --tgt_lang TGT_LANG   Target language.
-  --encoding ENCODING   Text encoding used in python str for input.
-  --clip_mode {copy,select,findbuf}
-                        Clipboard mode for translation trigger.
-  --buf_time BUF_TIME   Buffering time for clipboard.
+  -h, --help                        Show the help message and exit.
+  -s SRC_LANG, --src_lang SRC_LANG  Source language.
+  -t TGT_LANG, --tgt_lang TGT_LANG  Target language.
+  --encoding ENCODING               Text encoding used in python str for input.
+  -c {copy,select,findbuf}, --clip_mode {copy,select,findbuf}
+                                    Clipboard mode for translation trigger.
+  -b BUF_TIME, --buf_time BUF_TIME
+                                    Buffering time for clipboard.
 ```
 
 ## Screenshot ##

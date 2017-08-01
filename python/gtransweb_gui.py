@@ -155,16 +155,16 @@ if __name__ == '__main__':
     # Argument
     parser = argparse.ArgumentParser(
         description='GtransWebGUI: GUI Helper for Google Translation Website.')
-    parser.add_argument('--src_lang', type=str, default='auto',
+    parser.add_argument('-s', '--src_lang', type=str, default='auto',
                         help='Source language')
-    parser.add_argument('--tgt_lang', type=str, default='ja',
+    parser.add_argument('-t', '--tgt_lang', type=str, default='ja',
                         help='Target language')
     parser.add_argument('--encoding', type=str, default='utf-8',
                         help='Text encoding used in python str for input')
-    parser.add_argument('--clip_mode', choices=['copy', 'select', 'findbuf'],
-                        default='select',
+    parser.add_argument('-c', '--clip_mode',  default='select',
+                        choices=['copy', 'select', 'findbuf'],
                         help='Clipboard mode for translation trigger')
-    parser.add_argument('--buf_time', type=int, default=1000,
+    parser.add_argument('-b', '--buf_time', type=int, default=1000,
                         help='Buffering time for clipboard')
     args = parser.parse_args()
 
