@@ -36,14 +36,6 @@ def get_window_flags():
         return common | QtCore.Qt.FramelessWindowHint
 
 
-def set_win_pos_windows(win_id, x, y, width, height):
-    import win32gui
-    import win32con
-    win32gui.SetWindowPos(win_id, win32con.HWND_TOPMOST, x, y, width, height,
-                          win32con.SWP_NOMOVE | win32con.SWP_NOSIZE |
-                          win32con.SWP_SHOWWINDOW)
-
-
 class GtransPopupWindow(QtWidgets.QMainWindow):
     def __init__(self, qsettings, title='GtransWeb', curpos_offset=(20, 20),
                  default_size=(350, 150)):
@@ -90,13 +82,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         # Get cursor position and move
         pos = QtGui.QCursor().pos()
         x, y = pos.x() + self.curpos_offset[0], pos.y() + self.curpos_offset[1]
-        if os.name == 'nt':
-            # Windows
-            win_size = self.size()
-            width, height = win_size.width(), win_size.height()
-            set_win_pos_windows(self.winId(), x, y, width, height)
-        else:
-            self.move(x, y)
+        self.move(x, y)
         # Show
         self.show()
         self.raise_()
