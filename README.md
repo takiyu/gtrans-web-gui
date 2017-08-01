@@ -33,12 +33,14 @@ $ python python/gtransweb_gui.py -c copy -b 0
 ## Arguments ##
 ```
   -h, --help                        Show the help message and exit.
-  -s SRC_LANG, --src_lang SRC_LANG  Source language.
-  -t TGT_LANG, --tgt_lang TGT_LANG  Target language.
+  -s SRC_LANG, --src_lang SRC_LANG  Source language.  (default: auto)
+  -t TGT_LANG, --tgt_lang TGT_LANG  Target language.  (default: ja)
   --encoding ENCODING               Text encoding used in python str for input.
   -c {copy,select,findbuf}, --clip_mode {copy,select,findbuf}
                                     Clipboard mode for translation trigger.
-  -b BUF_TIME, --buf_time BUF_TIME  Buffering time for clipboard.
+                                    'select' is valid on only Linux.
+                                    (default: select)
+  -b BUF_TIME, --buf_time BUF_TIME  Buffering time for clipboard.  (default: 0)
 ```
 
 ## Screenshot ##
