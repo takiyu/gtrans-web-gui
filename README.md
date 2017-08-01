@@ -47,7 +47,7 @@ $ python python/gtransweb_gui.py -c copy -b 0
 <img src="https://raw.githubusercontent.com/takiyu/gtrans-web-gui/master/screenshots/1.png">
 
 ## TODO ##
-* [ ] Support for Mac OS X and Windows.
+* [ ] Support for Mac OS X. Clipboard behavior is something wrong.
 * [ ] Additional GUI, such as language selection, save settings and so on.
 
 ## Others ##
