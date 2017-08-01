@@ -46,7 +46,7 @@ class GtransParser(HTMLParser):
         return '\n'.join(self.results)
 
 
-def gtrans_search(src_lang, tgt_lang, src_text, encoding='utf-8'):
+def gtrans_search(src_lang, tgt_lang, src_text):
     # Encode for URL
     src_text = urllib_parse.quote_plus(src_text)
 
@@ -68,7 +68,7 @@ def gtrans_search(src_lang, tgt_lang, src_text, encoding='utf-8'):
         except NameError:
             pass
 
-    html = html.decode(encoding)
+    html = html.decode('utf-8')
 
     # Parse html
     parser = GtransParser()
@@ -88,16 +88,14 @@ if __name__ == "__main__":
                         help='Target language')
     parser.add_argument('--src_text', type=str, default='This is a pen.',
                         help='Srouce text')
-    parser.add_argument('--encoding', type=str, default='utf-8',
-                        help='Text encoding used in python str')
     args = parser.parse_args()
 
     # Text and language information
-    src_lang, tgt_lang, src_text, encoding = \
-        args.src_lang, args.tgt_lang, args.src_text, args.encoding
+    src_lang, tgt_lang, src_text = \
+        args.src_lang, args.tgt_lang, args.src_text
 
     # Access translate.google.com
-    tgt_text = gtrans_search(src_lang, tgt_lang, src_text, encoding)
+    tgt_text = gtrans_search(src_lang, tgt_lang, src_text)
 
     # Result
     text = 'Result text ({})\n'.format(tgt_lang) +    \

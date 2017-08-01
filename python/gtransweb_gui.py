@@ -154,8 +154,7 @@ class ClipboardChangedHandler():
 
         # Translate clipboard text
         logger.debug('Translate the text in clipboard')
-        tgt_text = gtrans_search(self.src_lang, self.tgt_lang, src_text,
-                                 self.encoding)
+        tgt_text = gtrans_search(self.src_lang, self.tgt_lang, src_text)
         self.window.set_text(tgt_text)
 
         # Set window position and size
@@ -175,7 +174,7 @@ if __name__ == '__main__':
     parser.add_argument('--tgt_lang', type=str, default='ja',
                         help='Target language')
     parser.add_argument('--encoding', type=str, default='utf-8',
-                        help='Text encoding used in python str')
+                        help='Text encoding used in python str for input')
     parser.add_argument('--clip_mode', choices=['copy', 'select', 'findbuf'],
                         default='select',
                         help='Clipboard mode for translation trigger')
