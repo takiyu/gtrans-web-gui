@@ -38,8 +38,7 @@ $ python python/gtransweb_gui.py -c copy -b 0
   --encoding ENCODING               Text encoding used in python str for input.
   -c {copy,select,findbuf}, --clip_mode {copy,select,findbuf}
                                     Clipboard mode for translation trigger.
-  -b BUF_TIME, --buf_time BUF_TIME
-                                    Buffering time for clipboard.
+  -b BUF_TIME, --buf_time BUF_TIME  Buffering time for clipboard.
 ```
 
 ## Screenshot ##
