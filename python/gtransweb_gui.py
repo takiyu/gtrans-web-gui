@@ -46,31 +46,31 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(title)
 
         # Create Text box
-        self.textbox = QtWidgets.QTextEdit(self)
-        self.textbox.setReadOnly(True)
-        self.textbox.setAcceptRichText(True)
-
-        self.textbox2 = MyTextEdit(self)
-        self.textbox2.setFixedHeight(100)
-
-        self.src_box = QtWidgets.QTextEdit(self)
-        self.src_box.setPlainText(self.src_lang)
-        self.src_box.setFixedHeight(40)
         self.tgt_box = QtWidgets.QTextEdit(self)
-        self.tgt_box.setPlainText(self.tgt_lang)
-        self.tgt_box.setFixedHeight(40)
-        self.btn2 = QtWidgets.QPushButton("<-->", self)
-        self.btn2.clicked.connect(self.toggle_src_tgt)
-        self.btn2.setFixedWidth(100)
-        self.btn3 = QtWidgets.QPushButton("change", self)
-        self.btn3.clicked.connect(self.set_src_tgt)
+        self.tgt_box.setReadOnly(True)
+        self.tgt_box.setAcceptRichText(True)
+
+        self.src_box = MyTextEdit(self)
+        self.src_box.setFixedHeight(100)
+
+        self.src_lang_box = QtWidgets.QTextEdit(self)
+        self.src_lang_box.setPlainText(self.src_lang)
+        self.src_lang_box.setFixedHeight(40)
+        self.tgt_lang_box = QtWidgets.QTextEdit(self)
+        self.tgt_lang_box.setPlainText(self.tgt_lang)
+        self.tgt_lang_box.setFixedHeight(40)
+        self.toggle_btn = QtWidgets.QPushButton("<-->", self)
+        self.toggle_btn.clicked.connect(self.toggle_src_tgt)
+        self.toggle_btn.setFixedWidth(100)
+        self.change_btn = QtWidgets.QPushButton("change", self)
+        self.change_btn.clicked.connect(self.set_src_tgt)
 
         # Put text box
         self.bottom_layout = QtWidgets.QHBoxLayout()
-        self.bottom_layout.addWidget(self.src_box)
-        self.bottom_layout.addWidget(self.btn2)
-        self.bottom_layout.addWidget(self.tgt_box)
-        self.bottom_layout.addWidget(self.btn3)
+        self.bottom_layout.addWidget(self.src_lang_box)
+        self.bottom_layout.addWidget(self.toggle_btn)
+        self.bottom_layout.addWidget(self.tgt_lang_box)
+        self.bottom_layout.addWidget(self.change_btn)
 
         self.bottom_widget = QtWidgets.QWidget()
         self.bottom_widget.setLayout(self.bottom_layout)
@@ -78,8 +78,8 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.bottom_widget.setFixedHeight(60)
 
         self.central_layout = QtWidgets.QVBoxLayout()
-        self.central_layout.addWidget(self.textbox)
-        self.central_layout.addWidget(self.textbox2)
+        self.central_layout.addWidget(self.tgt_box)
+        self.central_layout.addWidget(self.src_box)
         self.central_layout.addWidget(self.bottom_widget)
 
         self.central_widget = QtWidgets.QWidget()
@@ -97,29 +97,29 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             self.show()
             self.raise_()
 
-    def set_text(self, text):
-        self.textbox.setHtml(text)
+    def set_tgt_text(self, text):
+        self.tgt_box.setHtml(text)
 
-    def set_text2(self, text):
-        self.textbox2.setPlainText(text)
+    def set_src_text(self, text):
+        self.src_box.setPlainText(text)
 
-    def translate_from_textbox(self):
-        logger.debug('Translate the text in textbox')
-        src_text = self.textbox2.toPlainText()
+    def translate_from_tgt_box(self):
+        logger.debug('Translate the text in tgt_box')
+        src_text = self.src_box.toPlainText()
         tgt_text = gtrans_search(self.src_lang, self.tgt_lang, src_text)
-        self.set_text(tgt_text)
+        self.set_tgt_text(tgt_text)
 
     def toggle_src_tgt(self):
         tmp = self.src_lang
         self.src_lang = self.tgt_lang
         self.tgt_lang = tmp
-        self.src_box.setText(self.src_lang)
-        self.tgt_box.setText(self.tgt_lang)
+        self.src_lang_box.setText(self.src_lang)
+        self.tgt_lang_box.setText(self.tgt_lang)
         logger.debug("src: {0} tgt: {1}".format(self.src_lang, self.tgt_lang))
 
     def set_src_tgt(self):
-        self.src_lang = self.src_box.toPlainText()
-        self.tgt_lang = self.tgt_box.toPlainText()
+        self.src_lang = self.src_lang_box.toPlainText()
+        self.tgt_lang = self.tgt_lang_box.toPlainText()
         logger.debug("src: {0} tgt: {1}".format(self.src_lang, self.tgt_lang))
 
     def get_src_lang(self):
@@ -162,7 +162,7 @@ class MyTextEdit(QtWidgets.QTextEdit):
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return:
-            self.window.translate_from_textbox()
+            self.window.translate_from_tgt_box()
         else:
             super().keyPressEvent(event)
 
@@ -205,8 +205,8 @@ class ClipboardChangedHandler():
         # Translate clipboard text
         logger.debug('Translate the text in clipboard')
         tgt_text = gtrans_search(self.src_lang, self.tgt_lang, src_text)
-        self.window.set_text(tgt_text)
-        self.window.set_text2(src_text.decode(self.encoding))
+        self.window.set_tgt_text(tgt_text)
+        self.window.set_src_text(src_text.decode(self.encoding))
 
         # Set window position and size
         if not self.window.isVisible():
