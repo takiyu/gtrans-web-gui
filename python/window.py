@@ -153,7 +153,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             logger.debug('Translate the text in tgt_box')
             self.translate()
         else:
-            super().keyPressEvent(event)
+            super(GtransPopupWindow, self).keyPressEvent(event)
 
     def closeEvent(self, event):
         # Save window geometry and state

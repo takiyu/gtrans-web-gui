@@ -31,6 +31,12 @@ def get_clipboard_text(clip_mode):
     clip = app.clipboard()
     text = clip.text(clip_mode)
     text = ' '.join(text.splitlines())
+    try:
+        # For python 2
+        if isinstance(text, unicode):
+            text = text.encode('utf-8')
+    except NameError:
+        pass
     return text
 
 
@@ -59,14 +65,14 @@ class ClipboardChangedHandler():
         # Get new clipboard text
         src_text = get_clipboard_text(self.clip_mode)
 
-        # Translate clipboard text
-        logger.debug('Translate the text in clipboard')
-        self.window.translate(src_text)
-
         # Set window position and size
         if not self.window.isVisible():
             logger.debug('Show the window')
             window.show_at_cursor()
+
+        # Translate clipboard text
+        logger.debug('Translate the text in clipboard')
+        self.window.translate(src_text)
 
 
 if __name__ == '__main__':
