@@ -72,6 +72,14 @@ class ClipboardChangedHandler():
 if __name__ == '__main__':
     logger.info('Start GtransWeb GUI')
 
+    # Default argument for each OS
+    if os.name == 'posix':
+        default_clip_mode = 'select'
+        default_buf_time = 1000
+    else:
+        default_clip_mode = 'copy'
+        default_buf_time = 0
+
     # Argument
     parser = argparse.ArgumentParser(
         description='GtransWebGUI: GUI Helper for Google Translation Website.')
@@ -79,10 +87,10 @@ if __name__ == '__main__':
                         help='Source language')
     parser.add_argument('-t', '--tgt_lang', type=str, default='ja',
                         help='Target language')
-    parser.add_argument('-c', '--clip_mode',  default='copy',
+    parser.add_argument('-c', '--clip_mode',  default=default_clip_mode,
                         choices=['copy', 'select', 'findbuf'],
                         help='Clipboard mode for translation trigger')
-    parser.add_argument('-b', '--buf_time', type=int, default=1000,
+    parser.add_argument('-b', '--buf_time', type=int, default=default_buf_time,
                         help='Buffering time for clipboard')
     args = parser.parse_args()
 
