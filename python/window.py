@@ -1,0 +1,138 @@
+# -*- coding: utf-8 -*-
+from PyQt5 import QtGui, QtCore, QtWidgets
+
+from gtransweb import gtrans_search
+
+# logging
+from logging import getLogger, NullHandler
+logger = getLogger(__name__)
+logger.addHandler(NullHandler())
+
+
+class GtransPopupWindow(QtWidgets.QMainWindow):
+    def __init__(self, qsettings, src_lang, tgt_lang, title='GtransWeb',
+                 curpos_offset=(20, 20), default_size=(350, 150)):
+        logger.debug('New window is created')
+        super(GtransPopupWindow, self).__init__()
+
+        # Set window types
+        self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
+
+        # Window title
+        self.setWindowTitle(title)
+
+        # Set GUI items
+        self._init_gui()
+
+        # Store arguments
+        self.qsettings = qsettings
+        self.curpos_offset = curpos_offset
+        self._set_langs(src_lang, tgt_lang)
+
+        # Set window size posoiShow
+        geom = self.qsettings.value("geometry")
+        if geom is None:
+            self.resize(default_size[0], default_size[1])
+            self.show_at_cursor()
+        else:
+            self.restoreGeometry(geom)
+            self.show()
+            self.raise_()
+
+    def _init_gui(self):
+        # Create a target text box
+        self.tgt_box = QtWidgets.QTextEdit(self)
+        self.tgt_box.setReadOnly(True)
+        self.tgt_box.setAcceptRichText(True)
+        # Create a source text box
+        self.src_box = QtWidgets.QTextEdit(self)
+        self.src_box.setAcceptRichText(True)
+        # Create bottom items
+        self.src_lang_box = QtWidgets.QLineEdit(self)
+        self.tgt_lang_box = QtWidgets.QLineEdit(self)
+        self.src_lang_box.setFixedWidth(50)
+        self.tgt_lang_box.setFixedWidth(50)
+        self.swap_btn = QtWidgets.QPushButton("<-->", self)
+        self.swap_btn.setFixedWidth(50)
+        self.swap_btn.clicked.connect(self._swap_langs)
+        self.trans_btn = QtWidgets.QPushButton("Translate", self)
+        self.trans_btn.clicked.connect(self.translate)
+
+        # Create a splitter for text box
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.splitter.addWidget(self.tgt_box)
+        self.splitter.addWidget(self.src_box)
+
+        # Create horizontal bottom layout
+        self.bottom_layout = QtWidgets.QHBoxLayout()
+        self.bottom_layout.addWidget(self.src_lang_box)
+        self.bottom_layout.addWidget(self.swap_btn)
+        self.bottom_layout.addWidget(self.tgt_lang_box)
+        self.bottom_layout.addWidget(self.trans_btn)
+        # Warp with a widget
+        self.bottom_widget = QtWidgets.QWidget()
+        self.bottom_widget.setLayout(self.bottom_layout)
+        self.bottom_widget.setContentsMargins(-5, -5, -5, -5)
+
+        # Create vertical central layout
+        self.central_layout = QtWidgets.QVBoxLayout()
+        self.central_layout.addWidget(self.splitter)
+        self.central_layout.addWidget(self.bottom_widget)
+        # Warp with a widget
+        self.central_widget = QtWidgets.QWidget()
+        self.central_widget.setLayout(self.central_layout)
+        self.central_widget.setContentsMargins(-5, -5, -5, -5)
+
+        # Set layout
+        self.setCentralWidget(self.central_widget)
+
+    def _set_langs(self, src_lang, tgt_lang):
+        self.src_lang_box.setText(src_lang)
+        self.tgt_lang_box.setText(tgt_lang)
+
+    def _get_langs(self):
+        src_lang = self.src_lang_box.text()
+        tgt_lang = self.tgt_lang_box.text()
+        return src_lang, tgt_lang
+
+    def _swap_langs(self):
+        src_lang, tgt_lang = self._get_langs()
+        self._set_langs(tgt_lang, src_lang)
+
+    def translate(self, src_text=None):
+        if src_text is None:
+            # Fetch source text from GUI
+            src_text = self.src_box.toPlainText()
+        else:
+            # Set passed source text to GUI
+            self.src_box.setHtml(src_text)
+        # Translate
+        src_lang, tgt_lang = self._get_langs()
+        tgt_text = gtrans_search(src_lang, tgt_lang, src_text)
+        # Set target text to GUI
+        self.tgt_box.setHtml(tgt_text)
+
+    def show_at_cursor(self):
+        # Get cursor position and move
+        pos = QtGui.QCursor().pos()
+        x, y = pos.x() + self.curpos_offset[0], pos.y() + self.curpos_offset[1]
+        self.move(x, y)
+        # Show
+        self.show()
+        self.raise_()
+
+    def keyPressEvent(self, event):
+        # Exit with escape key
+        key = event.key()
+        if key == QtCore.Qt.Key_Escape:
+            logger.debug('Hide the window')
+            self.hide()
+        elif key == QtCore.Qt.Key_Return:
+            logger.debug('Translate the text in tgt_box')
+            self.translate()
+        else:
+            super().keyPressEvent(event)
+
+    def closeEvent(self, event):
+        # Save current window size and position
+        self.qsettings.setValue("geometry", self.saveGeometry())

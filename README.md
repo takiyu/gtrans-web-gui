@@ -20,7 +20,6 @@ This application translates your copied or selected texts using Google Translati
 ## Usage ##
 ```bash
 $ python python/gtransweb_gui.py [-h] [-s SRC_LANG] [-t TGT_LANG]
-                                 [--encoding ENCODING]
                                  [-c {copy,select,findbuf}] [-b BUF_TIME]
 
 # Example for Linux
@@ -35,7 +34,6 @@ $ python python/gtransweb_gui.py -c copy -b 0
   -h, --help                        Show the help message and exit.
   -s SRC_LANG, --src_lang SRC_LANG  Source language.  (default: auto)
   -t TGT_LANG, --tgt_lang TGT_LANG  Target language.  (default: ja)
-  --encoding ENCODING               Text encoding used in python str for input.
   -c {copy,select,findbuf}, --clip_mode {copy,select,findbuf}
                                     Clipboard mode for translation trigger.
                                     'select' is valid on only Linux.
