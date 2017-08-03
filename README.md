@@ -44,6 +44,10 @@ $ python python/gtransweb_gui.py -c copy -b 0
                                      Others          : 0]
 ```
 
+## Keyboard Shortcuts ##
+* ESC            : Hide the window and wait for clipboard action.
+* Enter (+ CTRL) : Start to translate the text in the text box.
+
 ## Screenshot ##
 <img src="https://raw.githubusercontent.com/takiyu/gtrans-web-gui/master/screenshots/1.png">
 
