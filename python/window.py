@@ -103,6 +103,8 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
 
     def _swap_langs(self):
         src_lang, tgt_lang = self._get_langs()
+        if src_lang == 'auto':  # Specific pattern for practical usage
+            src_lang = 'en'
         self._set_langs(tgt_lang, src_lang)
 
     def translate(self, src_text=None):
