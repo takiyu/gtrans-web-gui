@@ -28,10 +28,12 @@ else:
 
 
 class GtransPopupWindow(QtWidgets.QMainWindow):
-    def __init__(self, qsettings, title='GtransWeb', curpos_offset=(20, 20),
+    def __init__(self, qsettings, src_lang, tgt_lang, title='GtransWeb', curpos_offset=(20, 20),
                  default_size=(350, 150)):
         logger.debug('New window is created')
         super(GtransPopupWindow, self).__init__()
+        self.src_lang = src_lang
+        self.tgt_lang = tgt_lang
 
         # Store arguments
         self.qsettings = qsettings
@@ -44,13 +46,42 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(title)
 
         # Create Text box
-        self.textbox = QtWidgets.QTextEdit(self)
-        self.textbox.setReadOnly(True)
-        self.textbox.setAcceptRichText(True)
+        self.tgt_box = QtWidgets.QTextEdit(self)
+        self.tgt_box.setReadOnly(True)
+        self.tgt_box.setAcceptRichText(True)
+
+        self.src_box = MyTextEdit(self)
+        self.src_box.setFixedHeight(100)
+
+        self.src_lang_box = QtWidgets.QTextEdit(self)
+        self.src_lang_box.setPlainText(self.src_lang)
+        self.src_lang_box.setFixedHeight(40)
+        self.tgt_lang_box = QtWidgets.QTextEdit(self)
+        self.tgt_lang_box.setPlainText(self.tgt_lang)
+        self.tgt_lang_box.setFixedHeight(40)
+        self.toggle_btn = QtWidgets.QPushButton("<-->", self)
+        self.toggle_btn.clicked.connect(self.toggle_src_tgt)
+        self.toggle_btn.setFixedWidth(100)
+        self.change_btn = QtWidgets.QPushButton("change", self)
+        self.change_btn.clicked.connect(self.set_src_tgt)
 
         # Put text box
+        self.bottom_layout = QtWidgets.QHBoxLayout()
+        self.bottom_layout.addWidget(self.src_lang_box)
+        self.bottom_layout.addWidget(self.toggle_btn)
+        self.bottom_layout.addWidget(self.tgt_lang_box)
+        self.bottom_layout.addWidget(self.change_btn)
+
+        self.bottom_widget = QtWidgets.QWidget()
+        self.bottom_widget.setLayout(self.bottom_layout)
+        self.bottom_widget.setContentsMargins(-5, -5, -5, -5)
+        self.bottom_widget.setFixedHeight(60)
+
         self.central_layout = QtWidgets.QVBoxLayout()
-        self.central_layout.addWidget(self.textbox)
+        self.central_layout.addWidget(self.tgt_box)
+        self.central_layout.addWidget(self.src_box)
+        self.central_layout.addWidget(self.bottom_widget)
+
         self.central_widget = QtWidgets.QWidget()
         self.central_widget.setLayout(self.central_layout)
         self.central_widget.setContentsMargins(-5, -5, -5, -5)
@@ -66,8 +97,36 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             self.show()
             self.raise_()
 
-    def set_text(self, text):
-        self.textbox.setHtml(text)
+    def set_tgt_text(self, text):
+        self.tgt_box.setHtml(text)
+
+    def set_src_text(self, text):
+        self.src_box.setPlainText(text)
+
+    def translate_from_tgt_box(self):
+        logger.debug('Translate the text in tgt_box')
+        src_text = self.src_box.toPlainText()
+        tgt_text = gtrans_search(self.src_lang, self.tgt_lang, src_text)
+        self.set_tgt_text(tgt_text)
+
+    def toggle_src_tgt(self):
+        tmp = self.src_lang
+        self.src_lang = self.tgt_lang
+        self.tgt_lang = tmp
+        self.src_lang_box.setText(self.src_lang)
+        self.tgt_lang_box.setText(self.tgt_lang)
+        logger.debug("src: {0} tgt: {1}".format(self.src_lang, self.tgt_lang))
+
+    def set_src_tgt(self):
+        self.src_lang = self.src_lang_box.toPlainText()
+        self.tgt_lang = self.tgt_lang_box.toPlainText()
+        logger.debug("src: {0} tgt: {1}".format(self.src_lang, self.tgt_lang))
+
+    def get_src_lang(self):
+        return self.src_lang
+
+    def get_tgt_lang(self):
+        return self.tgt_lang
 
     def show_at_cursor(self):
         # Get cursor position and move
@@ -96,6 +155,18 @@ def get_clipboard_text(clip_mode, encoding):
     return text.encode(encoding)
 
 
+class MyTextEdit(QtWidgets.QTextEdit):
+    def __init__(self, window):
+        super(QtWidgets.QTextEdit, self).__init__()
+        self.window = window
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Return:
+            self.window.translate_from_tgt_box()
+        else:
+            super().keyPressEvent(event)
+
+
 class ClipboardChangedHandler():
     def __init__(self, clip_mode, src_lang, tgt_lang, encoding, window,
                  buf_time):
@@ -115,6 +186,8 @@ class ClipboardChangedHandler():
             QtCore.QTimer.singleShot(self.buf_time, self._translate)
 
     def _translate(self):
+        self.src_lang = self.window.get_src_lang()
+        self.tgt_lang = self.window.get_tgt_lang()
         # Disable old query
         called_time = self.query_deq.pop()
         if len(self.query_deq) > 0:
@@ -132,7 +205,8 @@ class ClipboardChangedHandler():
         # Translate clipboard text
         logger.debug('Translate the text in clipboard')
         tgt_text = gtrans_search(self.src_lang, self.tgt_lang, src_text)
-        self.window.set_text(tgt_text)
+        self.window.set_tgt_text(tgt_text)
+        self.window.set_src_text(src_text.decode(self.encoding))
 
         # Set window position and size
         if not self.window.isVisible():
@@ -152,7 +226,7 @@ if __name__ == '__main__':
                         help='Target language')
     parser.add_argument('--encoding', type=str, default='utf-8',
                         help='Text encoding used in python str for input')
-    parser.add_argument('-c', '--clip_mode',  default='select',
+    parser.add_argument('-c', '--clip_mode',  default='copy',
                         choices=['copy', 'select', 'findbuf'],
                         help='Clipboard mode for translation trigger')
     parser.add_argument('-b', '--buf_time', type=int, default=1000,
@@ -178,7 +252,7 @@ if __name__ == '__main__':
     qsettings = QtCore.QSettings('gtransweb', 'gtanswebgui')
 
     # Create window and handler
-    window = GtransPopupWindow(qsettings)
+    window = GtransPopupWindow(qsettings, src_lang, tgt_lang)
     clipboard_changed_handler = ClipboardChangedHandler(clip_mode, src_lang,
                                                         tgt_lang, encoding,
                                                         window, buf_time)
