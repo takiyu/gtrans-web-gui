@@ -113,9 +113,11 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
     def translate(self, src_text=None):
         if src_text is None:
             # Fetch source text from GUI
+            logger.debug('Translate the text in tgt_box')
             src_text = self.src_box.toPlainText()
         else:
             # Set passed source text to GUI
+            logger.debug('Translate the passed text')
             self.src_box.setHtml(src_text)
         src_lang, tgt_lang = self._get_langs()
         # Check previous status
@@ -131,6 +133,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             src_text, src_lang, tgt_lang
         # Translate
         tgt_text = gtrans_search(src_lang, tgt_lang, src_text)
+        logger.debug('Finish to translate')
         # Set target text to GUI
         self.tgt_box.setHtml(tgt_text)
 
@@ -150,7 +153,6 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             logger.debug('Hide the window')
             self.hide()
         elif key == QtCore.Qt.Key_Return:
-            logger.debug('Translate the text in tgt_box')
             self.translate()
         else:
             super(GtransPopupWindow, self).keyPressEvent(event)

@@ -12,9 +12,9 @@ import log_initializer
 from window import GtransPopupWindow
 
 # logging
-from logging import getLogger, DEBUG
+from logging import getLogger, INFO
 log_initializer.set_fmt()
-log_initializer.set_root_level(DEBUG)
+log_initializer.set_root_level(INFO)
 logger = getLogger(__name__)
 
 
@@ -28,6 +28,7 @@ else:
 
 
 def get_clipboard_text(clip_mode):
+    logger.debug('Get clipboard text (mode: %s)', clip_mode)
     clip = app.clipboard()
     text = clip.text(clip_mode)
     text = ' '.join(text.splitlines())
@@ -62,6 +63,7 @@ class ClipboardChangedHandler():
                 self.query_deq.clear()
             else:
                 return
+
         # Get new clipboard text
         src_text = get_clipboard_text(self.clip_mode)
 
@@ -71,7 +73,6 @@ class ClipboardChangedHandler():
             window.show_at_cursor()
 
         # Translate clipboard text
-        logger.debug('Translate the text in clipboard')
         self.window.translate(src_text)
 
 
@@ -128,5 +129,5 @@ if __name__ == '__main__':
     clip.changed.connect(clipboard_changed_handler)
 
     # Start
-    logger.debug('Wait for trigger: %s', args.clip_mode)
+    logger.info('Wait for trigger: %s', args.clip_mode)
     app.exec_()
