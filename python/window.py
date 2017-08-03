@@ -28,8 +28,11 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.qsettings = qsettings
         self.curpos_offset = curpos_offset
         self._set_langs(src_lang, tgt_lang)
-        # Previous text to prevent from multiple translation
+
+        # Previous status to prevent from multiple translation
         self.prev_src_text = ''
+        self.prev_src_lang = ''
+        self.prev_tgt_lang = ''
 
         # Set window size posoiShow
         geom = self.qsettings.value("geometry")
@@ -114,16 +117,19 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         else:
             # Set passed source text to GUI
             self.src_box.setHtml(src_text)
-        # Check source text
-        if src_text == self.prev_src_text:
-            logger.debug('Skip because of previous text')
+        src_lang, tgt_lang = self._get_langs()
+        # Check previous status
+        if src_text == self.prev_src_text and \
+           src_lang == self.prev_src_lang and \
+           tgt_lang == self.prev_tgt_lang:
+            logger.debug('Skip because of previous status')
             return
         if src_text == '':
             logger.debug('Skip empty text')
             return
-        self.prev_src_text = src_text
+        self.prev_src_text, self.prev_src_lang, self.prev_tgt_lang = \
+            src_text, src_lang, tgt_lang
         # Translate
-        src_lang, tgt_lang = self._get_langs()
         tgt_text = gtrans_search(src_lang, tgt_lang, src_text)
         # Set target text to GUI
         self.tgt_box.setHtml(tgt_text)
