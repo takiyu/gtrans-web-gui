@@ -28,6 +28,8 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.qsettings = qsettings
         self.curpos_offset = curpos_offset
         self._set_langs(src_lang, tgt_lang)
+        # Previous text to prevent from multiple translation
+        self.prev_src_text = ''
 
         # Set window size posoiShow
         geom = self.qsettings.value("geometry")
@@ -38,6 +40,10 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             self.restoreGeometry(geom)
             self.show()
             self.raise_()
+        # Restore saved state if possible
+        splitter_state = self.qsettings.value("splitter_state")
+        if splitter_state is not None:
+            self.splitter.restoreState(splitter_state)
 
     def _init_gui(self):
         # Create a target text box
@@ -56,7 +62,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.swap_btn.setFixedWidth(50)
         self.swap_btn.clicked.connect(self._swap_langs)
         self.trans_btn = QtWidgets.QPushButton("Translate", self)
-        self.trans_btn.clicked.connect(self.translate)
+        self.trans_btn.clicked.connect(lambda: self.translate())
 
         # Create a splitter for text box
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
@@ -106,6 +112,14 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         else:
             # Set passed source text to GUI
             self.src_box.setHtml(src_text)
+        # Check source text
+        if src_text == self.prev_src_text:
+            logger.debug('Skip because of previous text')
+            return
+        if src_text == '':
+            logger.debug('Skip empty text')
+            return
+        self.prev_src_text = src_text
         # Translate
         src_lang, tgt_lang = self._get_langs()
         tgt_text = gtrans_search(src_lang, tgt_lang, src_text)
@@ -134,5 +148,6 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             super().keyPressEvent(event)
 
     def closeEvent(self, event):
-        # Save current window size and position
+        # Save window geometry and state
         self.qsettings.setValue("geometry", self.saveGeometry())
+        self.qsettings.setValue("splitter_state", self.splitter.saveState())

@@ -40,7 +40,6 @@ class ClipboardChangedHandler():
         self.window = window
         self.buf_time = buf_time
         self.query_deq = collections.deque()
-        self.prev_src_text = ''
 
     def __call__(self, mode):
         # Eliminate the clipboard mode
@@ -59,9 +58,6 @@ class ClipboardChangedHandler():
                 return
         # Get new clipboard text
         src_text = get_clipboard_text(self.clip_mode)
-        if self.prev_src_text == src_text:
-            return
-        self.prev_src_text = src_text
 
         # Translate clipboard text
         logger.debug('Translate the text in clipboard')
