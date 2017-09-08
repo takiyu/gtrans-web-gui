@@ -102,22 +102,22 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
 
     def _init_candidate_list(self):
         self.cand_list = QtWidgets.QListWidget(self)
-        # double click or press enter to insert
-        # the abbreviation for that language
+
+        # Double click or press enter to insert
         self.cand_list.itemDoubleClicked.connect(self._set_from_list)
         self.cand_list.focusOutEvent = lambda _: self.cand_list.hide()
 
+        # The abbreviation for that language
         self.candidates = {
-                "arabic": "ar", "chinese": "zh-CN", "japanese": "ja",
-                "english": "en", "esperanto": "eo", "french": "fr",
-                "german": "de", "greek": "el", "italian": "it",
-                "korean": "ko", "latin": "la", "portugese": "pt-PT",
-                "russian": "ru", "spanish": "es"
-                }
+                "Auto": "auto", "Arabic": "ar", "Chinese": "zh-CN",
+                "English": "en", "Esperanto": "eo", "French": "fr",
+                "German": "de", "Greek": "el", "Italian": "it",
+                "Japanese": "ja", "Korean": "ko", "Latin": "la",
+                "Portugese": "pt-PT", "Russian": "ru", "Spanish": "es",
+        }
 
         for candidate in self.candidates.keys():
             QtWidgets.QListWidgetItem(candidate, self.cand_list)
-        self.cand_list.sortItems()
 
         self.cand_list.setGeometry(100, 100, 250, 300)
 
