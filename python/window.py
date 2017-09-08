@@ -23,6 +23,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
 
         # Set GUI items
         self._init_gui()
+        self._init_candidate_list()
 
         # Store arguments
         self.qsettings = qsettings
@@ -42,6 +43,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         else:
             self.restoreGeometry(geom)
             self.show()
+            self.cand_list.hide() # I don't want this popping up on init
             self.raise_()
         # Restore saved state if possible
         splitter_state = self.qsettings.value("splitter_state")
@@ -61,6 +63,9 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.tgt_lang_box = QtWidgets.QLineEdit(self)
         self.src_lang_box.setFixedWidth(50)
         self.tgt_lang_box.setFixedWidth(50)
+        # show candidate list when clicked
+        self.src_lang_box.focusInEvent = lambda _ : self._show_candidates(1)
+        self.tgt_lang_box.focusInEvent = lambda _ : self._show_candidates(2)
         self.swap_btn = QtWidgets.QPushButton("<-->", self)
         self.swap_btn.setFixedWidth(50)
         self.swap_btn.clicked.connect(self._swap_langs)
@@ -94,6 +99,44 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
 
         # Set layout
         self.setCentralWidget(self.central_widget)
+
+    def _init_candidate_list(self):
+        self.cand_list = QtWidgets.QListWidget(self)
+        # double click or press enter to insert the abbreviation for that language
+        self.cand_list.itemDoubleClicked.connect(self._set_from_list)
+        self.cand_list.focusOutEvent = lambda _ : self.cand_list.hide()
+
+        self.candidates = {
+                "arabic": "ar", "chinese": "zh-CN", "japanese": "ja",
+                "english": "en", "esperanto": "eo", "french": "fr",
+                "german": "de", "greek": "el", "italian": "it",
+                "korean": "ko", "latin": "la", "portugese": "pt-PT",
+                "russian": "ru", "spanish": "es"
+                }
+
+        for candidate in self.candidates.keys():
+            QtWidgets.QListWidgetItem(candidate, self.cand_list)
+        self.cand_list.sortItems()
+
+        self.cand_list.setGeometry(100,100,250,300)
+
+    def _show_candidates(self, box_selected):
+        logger.debug("show_candidates")
+        self.box_selected = box_selected
+        self.cand_list.show()
+        self.cand_list.setFocus()
+
+    def _set_from_list(self):
+        item = self.cand_list.currentItem().text()
+        lang = self.candidates[item]
+        if self.box_selected is 1:
+            logger.debug("src_lang -> " + lang)
+            self.src_lang_box.setText(lang)
+            self.cand_list.hide()
+        elif self.box_selected is 2:
+            logger.debug("tgt_lang -> " + lang)
+            self.tgt_lang_box.setText(lang)
+            self.cand_list.hide()
 
     def _set_langs(self, src_lang, tgt_lang):
         self.src_lang_box.setText(src_lang)
@@ -153,7 +196,10 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             logger.debug('Hide the window')
             self.hide()
         elif key == QtCore.Qt.Key_Return:
-            self.translate()
+            if not self.cand_list.isHidden():
+                self._set_from_list()
+            else:
+                self.translate()
         else:
             super(GtransPopupWindow, self).keyPressEvent(event)
 
