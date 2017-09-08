@@ -43,7 +43,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         else:
             self.restoreGeometry(geom)
             self.show()
-            self.cand_list.hide() # I don't want this popping up on init
+            self.cand_list.hide()  # I don't want this popping up on init
             self.raise_()
         # Restore saved state if possible
         splitter_state = self.qsettings.value("splitter_state")
@@ -64,8 +64,8 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.src_lang_box.setFixedWidth(50)
         self.tgt_lang_box.setFixedWidth(50)
         # show candidate list when clicked
-        self.src_lang_box.focusInEvent = lambda _ : self._show_candidates(1)
-        self.tgt_lang_box.focusInEvent = lambda _ : self._show_candidates(2)
+        self.src_lang_box.focusInEvent = lambda _: self._show_candidates(1)
+        self.tgt_lang_box.focusInEvent = lambda _: self._show_candidates(2)
         self.swap_btn = QtWidgets.QPushButton("<-->", self)
         self.swap_btn.setFixedWidth(50)
         self.swap_btn.clicked.connect(self._swap_langs)
@@ -102,9 +102,10 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
 
     def _init_candidate_list(self):
         self.cand_list = QtWidgets.QListWidget(self)
-        # double click or press enter to insert the abbreviation for that language
+        # double click or press enter to insert
+        # the abbreviation for that language
         self.cand_list.itemDoubleClicked.connect(self._set_from_list)
-        self.cand_list.focusOutEvent = lambda _ : self.cand_list.hide()
+        self.cand_list.focusOutEvent = lambda _: self.cand_list.hide()
 
         self.candidates = {
                 "arabic": "ar", "chinese": "zh-CN", "japanese": "ja",
@@ -118,7 +119,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             QtWidgets.QListWidgetItem(candidate, self.cand_list)
         self.cand_list.sortItems()
 
-        self.cand_list.setGeometry(100,100,250,300)
+        self.cand_list.setGeometry(100, 100, 250, 300)
 
     def _show_candidates(self, box_selected):
         logger.debug("show_candidates")
