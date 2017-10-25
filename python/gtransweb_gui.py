@@ -9,7 +9,8 @@ from threading import Thread
 import time
 
 import log_initializer
-from window import GtransPopupWindow
+#from window import GtransPopupWindow
+from window2 import GtransPopupWindowTriple as GtransPopupWindow
 
 # logging
 from logging import getLogger, INFO
