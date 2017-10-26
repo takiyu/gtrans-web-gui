@@ -9,9 +9,9 @@ logger = getLogger(__name__)
 logger.addHandler(NullHandler())
 
 
-class GtransPopupWindowTriple(GtransPopupWindow):
+class GtransPopupWindowDouble(GtransPopupWindow):
 
-    def __init__(self, qsettings, src_lang, tgt_lang, title='GtransWeb',
+    def __init__(self, qsettings, src_lang, tgt_lang, middle_lang, title='GtransWeb',
                  curpos_offset=(20, 20), default_size=(350, 150)):
 
         super(GtransPopupWindow, self).__init__()
@@ -29,7 +29,7 @@ class GtransPopupWindowTriple(GtransPopupWindow):
         # Store arguments
         self.qsettings = qsettings
         self.curpos_offset = curpos_offset
-        self._set_langs(src_lang, tgt_lang, middle_lang='en')
+        self._set_langs(src_lang, tgt_lang, middle_lang)
 
         # Previous status to prevent from multiple translation
         self.prev_src_text = ''
