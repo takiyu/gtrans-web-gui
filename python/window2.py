@@ -159,19 +159,18 @@ class GtransPopupWindowDouble(GtransPopupWindow):
             return
 
         # Check previous status
-        if src_text == self.prev_src_text and \
-           src_lang == self.prev_src_lang and \
-           tgt_lang == self.prev_tgt_lang:
-            if middle_text == self.prev_middle_text and \
-                    middle_lang == self.prev_middle_lang:
-                logger.debug('Skip because of previous status')
-                return
-            else:
-                logger.debug('Skip source->intermediate')
-                pass
-        else:
+        if src_text != self.prev_src_text or \
+           src_lang != self.prev_src_lang or \
+           middle_lang != self.prev_middle_lang:
             middle_text = gtrans_search(src_lang, middle_lang, src_text)
-        tgt_text = gtrans_search(middle_lang, tgt_lang, middle_text)
+        else:
+            logger.debug('Skip source->intermediate')
+        if middle_text != self.prev_middle_text or \
+           tgt_text != self.prev_tgt_text or \
+           tgt_lang != self.prev_tgt_lang:
+            tgt_text = gtrans_search(middle_lang, tgt_lang, middle_text)
+        else:
+            logger.debug('Skip intermediate->target')
 
         self.prev_src_text, self.prev_src_lang, \
             self.prev_middle_lang, self.prev_tgt_lang = \
