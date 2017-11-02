@@ -103,7 +103,7 @@ if __name__ == '__main__':
                         help='Clipboard mode for translation trigger')
     parser.add_argument('-b', '--buf_time', type=int, default=default_buf_time,
                         help='Buffering time for clipboard')
-    parser.add_argument('--double', action='store_true',
+    parser.add_argument('-d', '--double', action='store_true',
                         help='Double translation.')
     args = parser.parse_args()
 
