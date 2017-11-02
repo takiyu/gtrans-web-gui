@@ -97,14 +97,14 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--tgt_lang', type=str, default='ja',
                         help='Target language')
     parser.add_argument('-m', '--middle_lang', type=str, default='en',
-                        help='Intermediate language (for double translation)')
+                        help='Intermediate language (for secondhand translation)')
     parser.add_argument('-c', '--clip_mode',  default=default_clip_mode,
                         choices=['copy', 'select', 'findbuf'],
                         help='Clipboard mode for translation trigger')
     parser.add_argument('-b', '--buf_time', type=int, default=default_buf_time,
                         help='Buffering time for clipboard')
     parser.add_argument('-d', '--double', action='store_true',
-                        help='Double translation.')
+                        help='Secondhand translation.')
     args = parser.parse_args()
 
     # Language information
