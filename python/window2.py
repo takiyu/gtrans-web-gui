@@ -108,6 +108,7 @@ class GtransPopupWindowDouble(GtransPopupWindow):
         else:
             # Set passed source text to GUI
             logger.debug('Translate the passed text')
+            src_text = src_text.replace("　", " ")
             self.src_box.setHtml(src_text)
         middle_text = self.middle_box.toPlainText()
         src_lang, tgt_lang, middle_lang = self._get_langs()
