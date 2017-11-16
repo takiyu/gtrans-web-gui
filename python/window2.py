@@ -20,6 +20,7 @@ class GtransPopupWindowDouble(GtransPopupWindow):
         self.prev_tgt_lang = ''
 
     def _init_gui(self):
+        self.is_double = True
         # Create a target text box
         self.tgt_box = QtWidgets.QTextEdit(self)
         self.tgt_box.setReadOnly(True)
@@ -43,6 +44,8 @@ class GtransPopupWindowDouble(GtransPopupWindow):
         self.middle_lang_box.focusInEvent = lambda _: self._show_candidates(3)
         self.trans_btn = QtWidgets.QPushButton("Translate", self)
         self.trans_btn.clicked.connect(lambda: self.translate())
+        self.toggle_double_btn = QtWidgets.QPushButton("toggle", self)
+        self.toggle_double_btn.clicked.connect(lambda: self.toggle_double())
 
         # Create a splitter for text box
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
@@ -59,6 +62,7 @@ class GtransPopupWindowDouble(GtransPopupWindow):
         self.bottom_layout.addWidget(self.middle_lang_box)
         self.bottom_layout.addWidget(self.tgt_lang_box)
         self.bottom_layout.addWidget(self.trans_btn)
+        self.bottom_layout.addWidget(self.toggle_double_btn)
         # Warp with a widget
         self.bottom_widget = QtWidgets.QWidget()
         self.bottom_widget.setLayout(self.bottom_layout)
@@ -113,30 +117,57 @@ class GtransPopupWindowDouble(GtransPopupWindow):
             logger.debug('Translate the passed text')
             src_text = src_text.replace("　", " ")
             self.src_box.setHtml(src_text)
-        middle_text = self.middle_box.toPlainText()
-        src_lang, tgt_lang, middle_lang = self._get_langs()
-        if src_text == '':
-            logger.debug('Skip empty text')
-            return
 
-        # Check previous status
-        if src_text != self.prev_src_text or \
-           src_lang != self.prev_src_lang or \
-           middle_lang != self.prev_middle_lang:
-            middle_text = gtrans_search(src_lang, middle_lang, src_text)
-        else:
-            logger.debug('Skip source->intermediate')
-        if middle_text != self.prev_middle_text or \
-           tgt_text != self.prev_tgt_text or \
-           tgt_lang != self.prev_tgt_lang:
-            tgt_text = gtrans_search(middle_lang, tgt_lang, middle_text)
-        else:
-            logger.debug('Skip intermediate->target')
+        if self.is_double:
+            middle_text = self.middle_box.toPlainText()
+            src_lang, tgt_lang, middle_lang = self._get_langs()
+            if src_text == '':
+                logger.debug('Skip empty text')
+                return
 
-        self.prev_src_text, self.prev_src_lang, \
-            self.prev_middle_lang, self.prev_tgt_lang = \
-            src_text, src_lang, middle_lang, tgt_lang
-        # Set target text to GUI
-        self.middle_box.setHtml(middle_text)
+            # Check previous status
+            if src_text != self.prev_src_text or \
+               src_lang != self.prev_src_lang or \
+               middle_lang != self.prev_middle_lang:
+                middle_text = gtrans_search(src_lang, middle_lang, src_text)
+            else:
+                logger.debug('Skip source->intermediate')
+            if middle_text != self.prev_middle_text or \
+               tgt_text != self.prev_tgt_text or \
+               tgt_lang != self.prev_tgt_lang:
+                tgt_text = gtrans_search(middle_lang, tgt_lang, middle_text)
+            else:
+                logger.debug('Skip intermediate->target')
+
+            self.prev_src_text, self.prev_src_lang, \
+                self.prev_middle_lang, self.prev_tgt_lang = \
+                src_text, src_lang, middle_lang, tgt_lang
+            # Set target text to GUI
+            self.middle_box.setHtml(middle_text)
+        else:
+            src_lang, tgt_lang, _ = self._get_langs()
+            # Check previous status
+            if src_text == self.prev_src_text and \
+               src_lang == self.prev_src_lang and \
+               tgt_lang == self.prev_tgt_lang:
+                logger.debug('Skip because of previous status')
+                return
+            if src_text == '':
+                logger.debug('Skip empty text')
+                return
+            self.prev_src_text, self.prev_src_lang, self.prev_tgt_lang = \
+                src_text, src_lang, tgt_lang
+            # Translate
+            tgt_text = gtrans_search(src_lang, tgt_lang, src_text)
+            logger.debug('Finish to translate')
+            # Set target text to GUI
         self.tgt_box.setHtml(tgt_text)
         logger.debug('Finish to translate')
+
+    def toggle_double(self):
+        if self.is_double:
+            self.middle_box.hide()
+        else:
+            self.middle_box.show()
+        self._init_memory()
+        self.is_double = not self.is_double
