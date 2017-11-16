@@ -10,7 +10,8 @@ logger.addHandler(NullHandler())
 
 
 class GtransPopupWindow(QtWidgets.QMainWindow):
-    def __init__(self, qsettings, src_lang, tgt_lang, title='GtransWeb',
+
+    def __init__(self, qsettings, src_lang, tgt_lang, middle_lang=None, title='GtransWeb',
                  curpos_offset=(20, 20), default_size=(350, 150)):
         logger.debug('New window is created')
         super(GtransPopupWindow, self).__init__()
@@ -30,12 +31,9 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         # Store arguments
         self.qsettings = qsettings
         self.curpos_offset = curpos_offset
-        self._set_langs(src_lang, tgt_lang)
+        self._set_langs(src_lang, tgt_lang, middle_lang)
 
-        # Previous status to prevent from multiple translation
-        self.prev_src_text = ''
-        self.prev_src_lang = ''
-        self.prev_tgt_lang = ''
+        self._init_memory()
 
         # Set window size posoiShow
         geom = self.qsettings.value("geometry")
@@ -47,10 +45,17 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             self.show()
             self.cand_list.hide()  # I don't want this popping up on init
             self.raise_()
+
         # Restore saved state if possible
         splitter_state = self.qsettings.value("splitter_state")
         if splitter_state is not None:
             self.splitter.restoreState(splitter_state)
+
+    def _init_memory(self):
+        # Previous status to prevent from multiple translation
+        self.prev_src_text = ''
+        self.prev_src_lang = ''
+        self.prev_tgt_lang = ''
 
     def _init_gui(self):
         # Create a target text box
@@ -111,11 +116,11 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
 
         # The abbreviation for that language
         self.candidates = {
-                "Auto": "auto", "Arabic": "ar", "Chinese": "zh-CN",
-                "English": "en", "Esperanto": "eo", "French": "fr",
-                "German": "de", "Greek": "el", "Italian": "it",
-                "Japanese": "ja", "Korean": "ko", "Latin": "la",
-                "Portugese": "pt-PT", "Russian": "ru", "Spanish": "es",
+            "Auto": "auto", "Arabic": "ar", "Chinese": "zh-CN",
+            "English": "en", "Esperanto": "eo", "French": "fr",
+            "German": "de", "Greek": "el", "Italian": "it",
+            "Japanese": "ja", "Korean": "ko", "Latin": "la",
+            "Portugese": "pt-PT", "Russian": "ru", "Spanish": "es",
         }
 
         for candidate in self.candidates.keys():
@@ -141,7 +146,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
             self.tgt_lang_box.setText(lang)
             self.cand_list.hide()
 
-    def _set_langs(self, src_lang, tgt_lang):
+    def _set_langs(self, src_lang, tgt_lang, middle_lang=None):
         self.src_lang_box.setText(src_lang)
         self.tgt_lang_box.setText(tgt_lang)
 

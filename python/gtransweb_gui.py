@@ -10,6 +10,7 @@ import time
 
 import log_initializer
 from window import GtransPopupWindow
+from window2 import GtransPopupWindowDouble
 
 # logging
 from logging import getLogger, INFO
@@ -42,6 +43,7 @@ def get_clipboard_text(clip_mode):
 
 
 class ClipboardChangedHandler():
+
     def __init__(self, clip_mode, window, buf_time):
         self.clip_mode = clip_mode
         self.window = window
@@ -94,15 +96,20 @@ if __name__ == '__main__':
                         help='Source language')
     parser.add_argument('-t', '--tgt_lang', type=str, default='ja',
                         help='Target language')
+    parser.add_argument('-m', '--middle_lang', type=str, default='en',
+                        help='Intermediate language (for secondhand translation)')
     parser.add_argument('-c', '--clip_mode',  default=default_clip_mode,
                         choices=['copy', 'select', 'findbuf'],
                         help='Clipboard mode for translation trigger')
     parser.add_argument('-b', '--buf_time', type=int, default=default_buf_time,
                         help='Buffering time for clipboard')
+    parser.add_argument('-d', '--double', action='store_true',
+                        help='Secondhand translation.')
     args = parser.parse_args()
 
     # Language information
-    src_lang, tgt_lang = args.src_lang, args.tgt_lang
+    src_lang, middle_lang, tgt_lang = \
+        args.src_lang, args.middle_lang, args.tgt_lang
     buf_time = args.buf_time
 
     # Clipboard mode
@@ -120,7 +127,11 @@ if __name__ == '__main__':
     qsettings = QtCore.QSettings('gtransweb', 'gtanswebgui')
 
     # Create window and handler
-    window = GtransPopupWindow(qsettings, src_lang, tgt_lang)
+    if args.double:
+        window = GtransPopupWindowDouble(
+            qsettings, src_lang, tgt_lang, middle_lang)
+    else:
+        window = GtransPopupWindow(qsettings, src_lang, tgt_lang)
     clipboard_changed_handler = ClipboardChangedHandler(clip_mode, window,
                                                         buf_time)
 
