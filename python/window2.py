@@ -117,13 +117,14 @@ class GtransPopupWindowDouble(GtransPopupWindow):
             logger.debug('Translate the passed text')
             src_text = src_text.replace("　", " ")
             self.src_box.setHtml(src_text)
+        src_lang, tgt_lang, middle_lang = self._get_langs()
+
+        if src_text == '':
+            logger.debug('Skip empty text')
+            return
 
         if self.is_double:
             middle_text = self.middle_box.toPlainText()
-            src_lang, tgt_lang, middle_lang = self._get_langs()
-            if src_text == '':
-                logger.debug('Skip empty text')
-                return
 
             # Check previous status
             if src_text != self.prev_src_text or \
@@ -139,28 +140,23 @@ class GtransPopupWindowDouble(GtransPopupWindow):
             else:
                 logger.debug('Skip intermediate->target')
 
-            self.prev_src_text, self.prev_src_lang, \
-                self.prev_middle_lang, self.prev_tgt_lang = \
-                src_text, src_lang, middle_lang, tgt_lang
             # Set target text to GUI
             self.middle_box.setHtml(middle_text)
+
         else:
-            src_lang, tgt_lang, _ = self._get_langs()
             # Check previous status
             if src_text == self.prev_src_text and \
                src_lang == self.prev_src_lang and \
                tgt_lang == self.prev_tgt_lang:
                 logger.debug('Skip because of previous status')
                 return
-            if src_text == '':
-                logger.debug('Skip empty text')
-                return
-            self.prev_src_text, self.prev_src_lang, self.prev_tgt_lang = \
-                src_text, src_lang, tgt_lang
             # Translate
             tgt_text = gtrans_search(src_lang, tgt_lang, src_text)
-            logger.debug('Finish to translate')
-            # Set target text to GUI
+
+        self.prev_src_text, self.prev_src_lang, \
+            self.prev_middle_lang, self.prev_tgt_lang = \
+            src_text, src_lang, middle_lang, tgt_lang
+        # Set target text to GUI
         self.tgt_box.setHtml(tgt_text)
         logger.debug('Finish to translate')
 

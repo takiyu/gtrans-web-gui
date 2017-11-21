@@ -26,8 +26,6 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self._init_gui()
         self._init_candidate_list()
 
-        self.setStyleSheet("QTextEdit{font-family: 'Ricty Diminished'; font-size: 28px;}")
-
         # Store arguments
         self.qsettings = qsettings
         self.curpos_offset = curpos_offset
