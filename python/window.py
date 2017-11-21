@@ -81,6 +81,8 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
         self.splitter.addWidget(self.tgt_box)
         self.splitter.addWidget(self.src_box)
+        self.splitter.setCollapsible(0, False)
+        self.splitter.setCollapsible(1, False)
 
         # Create horizontal bottom layout
         self.bottom_layout = QtWidgets.QHBoxLayout()
