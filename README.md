@@ -45,6 +45,7 @@ $ python python/gtransweb_gui.py -c copy -b 0
                                     [default on Linux: 1000 (for select mode),
                                      Others          : 0]
   -d, --double          Secondhand translation.
+  -o, --overwrite       Overwrite clipboard with translated text
 ```
 
 ## Keyboard Shortcuts ##

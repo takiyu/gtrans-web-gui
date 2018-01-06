@@ -42,13 +42,22 @@ def get_clipboard_text(clip_mode):
     return text
 
 
+def set_clipboard_text(clip_mode, text):
+    logger.debug('Set clipboard text (mode: %s)', clip_mode)
+    clip = app.clipboard()
+    clip.setText(text, mode=clip_mode)
+    return text
+
+
 class ClipboardChangedHandler():
 
-    def __init__(self, clip_mode, window, buf_time):
+    def __init__(self, clip_mode, window, buf_time, overwrite):
         self.clip_mode = clip_mode
         self.window = window
         self.buf_time = buf_time
         self.query_deq = collections.deque()
+        self.lock = False
+        self.overwrite_clipboard = overwrite
 
     def __call__(self, mode):
         # Eliminate the clipboard mode
@@ -59,6 +68,11 @@ class ClipboardChangedHandler():
     def _translate(self):
         # Disable old query
         called_time = self.query_deq.pop()
+        if self.lock:
+            logger.debug('Text is locked')
+            print("locked")
+            self.lock = False
+            return
         if len(self.query_deq) > 0:
             # Overwrite too old query
             if time.time() > called_time + self.buf_time + 1.0:
@@ -75,7 +89,10 @@ class ClipboardChangedHandler():
             window.show_at_cursor()
 
         # Translate clipboard text
-        self.window.translate(src_text)
+        tgt_text = self.window.translate(src_text)
+        if self.overwrite_clipboard:
+            self.lock = True
+            set_clipboard_text(self.clip_mode, tgt_text)
 
 
 if __name__ == '__main__':
@@ -105,6 +122,8 @@ if __name__ == '__main__':
                         help='Buffering time for clipboard')
     parser.add_argument('-d', '--double', action='store_true',
                         help='Secondhand translation.')
+    parser.add_argument('-o', '--overwrite', action='store_true',
+                        help='Overwrite clipboard with translated text')
     args = parser.parse_args()
 
     # Language information
@@ -133,7 +152,7 @@ if __name__ == '__main__':
     else:
         window = GtransPopupWindow(qsettings, src_lang, tgt_lang)
     clipboard_changed_handler = ClipboardChangedHandler(clip_mode, window,
-                                                        buf_time)
+                                                        buf_time, args.overwrite)
 
     # Set clipboard changed handler
     clip = app.clipboard()
