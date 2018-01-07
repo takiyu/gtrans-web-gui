@@ -70,7 +70,6 @@ class ClipboardChangedHandler():
         called_time = self.query_deq.pop()
         if self.lock:
             logger.debug('Text is locked')
-            print("locked")
             self.lock = False
             return
         if len(self.query_deq) > 0:
