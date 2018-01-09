@@ -56,7 +56,7 @@ class ClipboardChangedHandler():
         self.window = window
         self.buf_time = buf_time
         self.query_deq = collections.deque()
-        self.lock = False
+        self.translation_skip = False
         self.overwrite_clipboard = overwrite
 
     def __call__(self, mode):
@@ -68,9 +68,9 @@ class ClipboardChangedHandler():
     def _translate(self):
         # Disable old query
         called_time = self.query_deq.pop()
-        if self.lock:
-            logger.debug('Text is locked')
-            self.lock = False
+        if self.translation_skip:
+            logger.debug('Translation is skipped')
+            self.translation_skip = False
             return
         if len(self.query_deq) > 0:
             # Overwrite too old query
@@ -90,7 +90,7 @@ class ClipboardChangedHandler():
         # Translate clipboard text
         tgt_text = self.window.translate(src_text)
         if self.overwrite_clipboard:
-            self.lock = True
+            self.translation_skip = True
             set_clipboard_text(self.clip_mode, tgt_text)
 
 
