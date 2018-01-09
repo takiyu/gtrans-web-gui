@@ -187,6 +187,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         logger.debug('Finish to translate')
         # Set target text to GUI
         self.tgt_box.setHtml(tgt_text)
+        return tgt_text
 
     def show_at_cursor(self):
         # Get cursor position and move

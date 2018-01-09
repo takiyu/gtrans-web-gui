@@ -159,6 +159,7 @@ class GtransPopupWindowDouble(GtransPopupWindow):
         # Set target text to GUI
         self.tgt_box.setHtml(tgt_text)
         logger.debug('Finish to translate')
+        return tgt_text
 
     def toggle_double(self):
         if self.is_double:
