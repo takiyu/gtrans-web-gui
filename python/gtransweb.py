@@ -48,7 +48,7 @@ class GtransParser(HTMLParser):
 
 def gtrans_search(src_lang, tgt_lang, src_text):
     # Encode for URL
-    src_text = urllib_parse.quote_plus(src_text)
+    src_text = urllib_parse.quote_plus(src_text.encode('utf-8'))
 
     # Header and URL
     headers = {'User-Agent': USER_AGENT}
