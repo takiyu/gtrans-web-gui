@@ -3,7 +3,7 @@ import unittest
 
 from gtransweb import log_initializer
 from gtransweb import GTransWeb
-from gtransweb.gtrans_web import _create_browser, _create_any_browser
+from gtransweb.gtransweb import _create_browser, _create_any_browser
 
 # logging (root)
 from logging import getLogger, DEBUG
