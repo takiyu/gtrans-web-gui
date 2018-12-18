@@ -5,28 +5,26 @@ GUI helper for Google Translation Website.
 This application translates your copied or selected texts using Google Translation Website.
 
 ## Dependency ##
-* Python (2.x or 3.x)
+* Python (3.6>)
 * Qt5 (Python binding)
 
 ## Supports ##
-* [x] Linux Python 2.7
 * [x] Linux Python 3.6
-* [ ] Windows Python 2.x
 * [x] Windows Python 3.6
 * [x] Windows PowerShell Python 3.6
-* [ ] Mac OS Python 2.x
 * [ ] Mac OS Python 3.x
 
 ## Usage ##
 ```bash
-$ python python/gtransweb_gui.py [-h] [-s SRC_LANG] [-t TGT_LANG]
-                                 [-c {copy,select,findbuf}] [-b BUF_TIME]
+$ python gtransweb_gui/gtransweb_gui.py [-h] [-s SRC_LANG] [-t TGT_LANG]
+                                        [-c {copy,select,findbuf}]
+                                        [-b BUF_TIME]
 
 # Example for Linux
-$ python python/gtransweb_gui.py
+$ python gtransweb_gui/gtransweb_gui.py
 
 # Example for Windows
-$ python python/gtransweb_gui.py -c copy -b 0
+$ python gtransweb_gui/gtransweb_gui.py -c copy -b 0
 ```
 
 ## Arguments ##
