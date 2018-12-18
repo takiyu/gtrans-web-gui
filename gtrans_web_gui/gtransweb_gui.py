@@ -8,13 +8,13 @@ import sys
 from threading import Thread
 import time
 
-import log_initializer
+from gtrans_web import log_initializer
+
 from window import GtransPopupWindow
 from window2 import GtransPopupWindowDouble
 
-# logging
+# logging (root)
 from logging import getLogger, INFO
-log_initializer.set_fmt()
 log_initializer.set_root_level(INFO)
 logger = getLogger(__name__)
 

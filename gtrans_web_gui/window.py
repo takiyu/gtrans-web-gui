@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from gtransweb import gtrans_search
+from gtrans_web import GTransWeb
 
 # logging
 from logging import getLogger, NullHandler
@@ -15,6 +15,9 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
                  curpos_offset=(20, 20), default_size=(350, 150)):
         logger.debug('New window is created')
         super(GtransPopupWindow, self).__init__()
+
+        # Create GTans instance
+        self.gtrans = GTransWeb()
 
         # Set window types
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
@@ -183,7 +186,7 @@ class GtransPopupWindow(QtWidgets.QMainWindow):
         self.prev_src_text, self.prev_src_lang, self.prev_tgt_lang = \
             src_text, src_lang, tgt_lang
         # Translate
-        tgt_text = gtrans_search(src_lang, tgt_lang, src_text)
+        tgt_text = self.gtrans.translate(src_lang, tgt_lang, src_text)
         logger.debug('Finish to translate')
         # Set target text to GUI
         self.tgt_box.setHtml(tgt_text)

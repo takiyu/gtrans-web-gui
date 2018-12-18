@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt5 import QtCore, QtWidgets
 
-from gtransweb import gtrans_search
+from gtrans_web import GTransWeb
 from window import GtransPopupWindow
 # logging
 from logging import getLogger, NullHandler
@@ -130,13 +130,13 @@ class GtransPopupWindowDouble(GtransPopupWindow):
             if src_text != self.prev_src_text or \
                src_lang != self.prev_src_lang or \
                middle_lang != self.prev_middle_lang:
-                middle_text = gtrans_search(src_lang, middle_lang, src_text)
+                middle_text = self.gtrans.translate(src_lang, middle_lang, src_text)
             else:
                 logger.debug('Skip source->intermediate')
             if middle_text != self.prev_middle_text or \
                tgt_text != self.prev_tgt_text or \
                tgt_lang != self.prev_tgt_lang:
-                tgt_text = gtrans_search(middle_lang, tgt_lang, middle_text)
+                tgt_text = self.gtrans.translate(middle_lang, tgt_lang, middle_text)
             else:
                 logger.debug('Skip intermediate->target')
 
@@ -151,7 +151,7 @@ class GtransPopupWindowDouble(GtransPopupWindow):
                 logger.debug('Skip because of previous status')
                 return
             # Translate
-            tgt_text = gtrans_search(src_lang, tgt_lang, src_text)
+            tgt_text = self.gtrans.translate(src_lang, tgt_lang, src_text)
 
         self.prev_src_text, self.prev_src_lang, \
             self.prev_middle_lang, self.prev_tgt_lang = \
