@@ -8,7 +8,7 @@ import sys
 from threading import Thread
 import time
 
-from gtrans_web import log_initializer
+from gtransweb import log_initializer
 
 from window import GtransPopupWindow
 from window2 import GtransPopupWindowDouble

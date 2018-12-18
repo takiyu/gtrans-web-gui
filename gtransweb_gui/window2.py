@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt5 import QtCore, QtWidgets
 
-from gtrans_web import GTransWeb
+from gtransweb import GTransWeb
 from window import GtransPopupWindow
 # logging
 from logging import getLogger, NullHandler

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import unittest
 
-from gtrans_web import log_initializer
-from gtrans_web import GTransWeb
-from gtrans_web.gtrans_web import _create_browser, _create_any_browser
+from gtransweb import log_initializer
+from gtransweb import GTransWeb
+from gtransweb.gtrans_web import _create_browser, _create_any_browser
 
 # logging (root)
 from logging import getLogger, DEBUG
