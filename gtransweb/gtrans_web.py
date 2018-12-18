@@ -6,6 +6,7 @@ import urllib.parse as urllib_parse
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 # logging
 from logging import getLogger, NullHandler
@@ -68,7 +69,7 @@ class GTransWeb(object):
         if self._browser:
             self._browser.quit()
 
-    def translate(self, src_lang, tgt_lang, src_text, timeout=10):
+    def translate(self, src_lang, tgt_lang, src_text, timeout=5):
         ''' Translate via Google website '''
 
         # Encode for URL
@@ -84,8 +85,12 @@ class GTransWeb(object):
         # Extract result by XPath
         xpath = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/' + \
                 'div[2]/div[1]/div[2]/div/span[1]/span'
-        result_elem = WebDriverWait(self._browser, timeout).until(
-                EC.visibility_of_element_located((By.XPATH, xpath)))
-        tgt_text = result_elem.text
+        try:
+            result_elem = WebDriverWait(self._browser, timeout).until(
+                    EC.visibility_of_element_located((By.XPATH, xpath)))
+            tgt_text = result_elem.text
+            return tgt_text
 
-        return tgt_text
+        except TimeoutException:
+            logger.warn('Timeout to translate')
+            return ''
