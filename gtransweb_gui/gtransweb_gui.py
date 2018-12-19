@@ -23,9 +23,10 @@ class GtransWebGui(object):
             print(src_text)
             return f'{src_text}_via_callback'
 
+        gtrans = GTransWeb(headless=True)
         clipboard = Clipboard(app)
         handler = ClipboardHandler(clipboard, callback)
-        gtrans = GTransWeb(headless=True)
+        handler.set_callback(callback)
 
         # Start
         app.exec_()

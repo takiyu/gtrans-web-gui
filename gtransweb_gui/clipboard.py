@@ -8,21 +8,24 @@ logger.addHandler(NullHandler())
 
 
 class ClipboardHandler(object):
-    '''ClipboardHandler
-        :param clipboard: Instance of Clipboard.
-        :param callback: Callback function when clipboard changed, and it must
-                         perform `tgt_text = callback(src_text)`.
-    '''
-
-    def __init__(self, clipboard, callback):
+    def __init__(self, clipboard):
         self._clipboard = clipboard
-        self._callback = callback
 
+        self._callback = None
         self._overwrite_flag = True
         self._skip_flag = False  # Flag for escaping recursing
 
         # Connect event handling
         self._clipboard.connect(self)
+
+    def set_callback(self, callback):
+        ''' Set callback which is call when clipboard changed
+            :param callback: Callback function which is called when clipboard
+                             changed, and it must perform
+                             `tgt_text = callback(src_text)`. If `tgt_text` is
+                             not string, no overwriting will be happen.
+        '''
+        self._callback = callback
 
     def get_overwrite_flag(self):
         ''' Get a flag for clipboard overwriting '''
@@ -34,6 +37,9 @@ class ClipboardHandler(object):
 
     def __call__(self, mode):
         ''' Entry point of changing event handling '''
+        if not callable(self._callback):
+            return
+
         # Eliminate the clipboard mode
         if mode != self._clipboard.get_mode():
             return
@@ -46,7 +52,7 @@ class ClipboardHandler(object):
         # Run callback
         src_text = self._clipboard.get_text()
         tgt_text = self._callback(src_text)
-        if self._overwrite_flag:
+        if self._overwrite_flag and isinstance(tgt_text, str):
             self._skip_flag = True  # Set for escaping recursive calling
             self._clipboard.set_text(tgt_text)
 

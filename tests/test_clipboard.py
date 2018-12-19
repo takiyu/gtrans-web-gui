@@ -45,13 +45,9 @@ class ClipboardTest(unittest.TestCase):
             self.assertEqual(clipboard.get_text(), text)
 
     def test_clipboard_handler(self):
-        # Define callback
-        def callback(src_text):
-            return f'{src_text}_via_callback'
-
-        # Testing instances
         clipboard = Clipboard(self.app)
-        handler = ClipboardHandler(clipboard, callback)
+        handler = ClipboardHandler(clipboard)
+
         # Enable to overwrite clipboard
         handler.set_overwrite_flag(True)
 
@@ -60,13 +56,18 @@ class ClipboardTest(unittest.TestCase):
         for mode in modes:
             clipboard.set_mode(mode)
 
+            # Define callback and set
+            def callback(src_text):
+                return f'{src_text}_via_callback_{mode}'
+            handler.set_callback(callback)
+
             # Make clipboard event happen
             src_text = f'test_{mode}_123_てすと_試験'
             clipboard.set_text(src_text)
 
             # Check overwritten clipboard
             tgt_text = clipboard.get_text()
-            self.assertEqual(tgt_text, f'{src_text}_via_callback')
+            self.assertEqual(tgt_text, f'{src_text}_via_callback_{mode}')
 
 
 if __name__ == '__main__':
