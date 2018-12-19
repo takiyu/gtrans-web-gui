@@ -65,9 +65,12 @@ class GTransWeb(object):
         self._browser = _create_any_browser(browser_modes, headless)
 
     def __del__(self):
-        # Close browser
         if self._browser:
-            self._browser.quit()
+            # Close browser
+            try:
+                self._browser.quit()
+            except ImportError:
+                pass  # Escape ImportError in __del__() of Python3.
 
     def translate(self, src_lang, tgt_lang, src_text, timeout=5):
         ''' Translate via Google website '''
