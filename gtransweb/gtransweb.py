@@ -13,51 +13,6 @@ logger = getLogger(__name__)
 logger.addHandler(NullHandler())
 
 
-def _create_browser(mode, headless=True):
-    ''' Create a browser instance '''
-    logger.debug(f'Create browser (mode: {mode}, headless: {headless}')
-    try:
-        if mode == 'chrome':
-            # Chrome
-            from selenium.webdriver import Chrome, ChromeOptions
-            options = ChromeOptions()
-            if headless:
-                options.add_argument('--headless')
-            return Chrome(options=options)
-
-        elif mode == 'firefox':
-            # Firefox
-            from selenium.webdriver import Firefox, FirefoxOptions
-            options = FirefoxOptions()
-            if headless:
-                options.add_argument('-headless')
-            return Firefox(options=options, service_log_path=None)
-
-        else:
-            logger.error('Unknown browser mode')
-            return None
-
-    except Exception:
-        logger.error('Failed to create browser')
-        return None
-
-
-def _create_any_browser(modes, headless):
-    ''' Create an available browser instance by trying to create '''
-    logger.debug('Create any browser')
-
-    for mode in modes:
-        # Try to create browser
-        browser = _create_browser(mode, headless)
-        if browser is None:
-            continue  # Failed
-        else:
-            return browser  # Found
-
-    logger.error('No browser is valid')
-    return None
-
-
 class GTransWeb(object):
 
     def __init__(self, browser_modes=['chrome', 'firefox'], headless=True):
@@ -107,3 +62,48 @@ class GTransWeb(object):
         except TimeoutException:
             logger.warn('Timeout to translate')
             return ''
+
+
+def _create_browser(mode, headless=True):
+    ''' Create a browser instance '''
+    logger.debug(f'Create browser (mode: {mode}, headless: {headless}')
+    try:
+        if mode == 'chrome':
+            # Chrome
+            from selenium.webdriver import Chrome, ChromeOptions
+            options = ChromeOptions()
+            if headless:
+                options.add_argument('--headless')
+            return Chrome(options=options)
+
+        elif mode == 'firefox':
+            # Firefox
+            from selenium.webdriver import Firefox, FirefoxOptions
+            options = FirefoxOptions()
+            if headless:
+                options.add_argument('-headless')
+            return Firefox(options=options, service_log_path=None)
+
+        else:
+            logger.error('Unknown browser mode')
+            return None
+
+    except Exception:
+        logger.error('Failed to create browser')
+        return None
+
+
+def _create_any_browser(modes, headless):
+    ''' Create an available browser instance by trying to create '''
+    logger.debug('Create any browser')
+
+    for mode in modes:
+        # Try to create browser
+        browser = _create_browser(mode, headless)
+        if browser is None:
+            continue  # Failed
+        else:
+            return browser  # Found
+
+    logger.error('No browser is valid')
+    return None
