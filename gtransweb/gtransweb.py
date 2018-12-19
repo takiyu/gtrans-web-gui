@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import urllib.parse as urllib_parse
+from threading import Thread
+from queue import Queue, Full, Empty
+import time
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -62,6 +65,54 @@ class GTransWeb(object):
         except TimeoutException:
             logger.warn('Timeout to translate')
             return ''
+
+
+class GTransWebAsync(object):
+    def __init__(self, browser_modes=['chrome', 'firefox'], headless=True,
+                 queue_size=1, query_interval=0.05):
+        self._gtransweb = GTransWeb(browser_modes, headless)
+
+        self._inp_queue = Queue(maxsize=queue_size)
+        self._query_interval = query_interval
+        self._thread = Thread(target=self._back_loop, daemon=True)
+        self._callback = None
+
+        self._thread.start()
+
+    def set_callback(self, callback):
+        ''' Set callback which is call when translation is finished
+            :param callback: Callback function. It must perform
+                             `callback(tgt_text)` and it called in another
+                             thread asynchronously.
+        '''
+        self._callback = callback
+
+    def translate(self, src_lang, tgt_lang, src_text, timeout=100):
+        query = (src_lang, tgt_lang, src_text, timeout)
+        while True:
+            try:
+                # Push new item
+                self._inp_queue.put_nowait(query)
+                # Success
+                return
+            except Full:
+                # Pop oldest item
+                try:
+                    time.sleep(self._query_interval)
+                    self._inp_queue.get_nowait()
+                except Empty:
+                    pass
+
+    def _back_loop(self):
+        while True:
+            # Wait for query
+            query = self._inp_queue.get()
+
+            # Translate
+            tgt_text = self._gtransweb.translate(*query)
+
+            # Pass the result
+            self._callback(tgt_text)
 
 
 def _create_browser(mode, headless=True):

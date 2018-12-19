@@ -20,8 +20,7 @@ class ClipboardHandler(object):
 
     def set_callback(self, callback):
         ''' Set callback which is call when clipboard changed
-            :param callback: Callback function which is called when clipboard
-                             changed, and it must perform
+            :param callback: Callback function. It must perform
                              `tgt_text = callback(src_text)`. If `tgt_text` is
                              not string, no overwriting will be happen.
         '''

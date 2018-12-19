@@ -1,2 +1,2 @@
-from .gtransweb import GTransWeb
+from .gtransweb import GTransWeb, GTransWebAsync
 from . import log_initializer
