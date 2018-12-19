@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
+from queue import Queue
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from gtransweb import GTransWeb
+from gtransweb import GTransWebAsync
 from clipboard import Clipboard, ClipboardHandler
 
 # logging
@@ -12,25 +13,34 @@ logger = getLogger(__name__)
 logger.addHandler(NullHandler())
 
 
-class GtransWebGui(object):
+class GTransWebGui(object):
     def __init__(self):
         # Qt application
         app = QtWidgets.QApplication([sys.argv[0]])
         # Qt settings
         qsettings = QtCore.QSettings('gtransweb', 'gtanswebgui')
 
-        def callback(src_text):
-            print(src_text)
-            return f'{src_text}_via_callback'
-
-        gtrans = GTransWeb(headless=True)
+        gtrans_async = GTransWebAsync(headless=True)
         clipboard = Clipboard(app)
-        handler = ClipboardHandler(clipboard, callback)
-        handler.set_callback(callback)
+        handler = ClipboardHandler(clipboard)
+
+        q = Queue()
+
+        def clip_callback(src_text):
+            gtrans_async.translate('en', 'ja', src_text)
+            # return None
+            return q.get()
+
+        def gtrans_callback(tgt_text):
+            print(tgt_text)
+            q.put(tgt_text)
+
+        handler.set_callback(clip_callback)
+        gtrans_async.set_callback(gtrans_callback)
 
         # Start
         app.exec_()
 
 
 if __name__ == '__main__':
-    pass
+    GTransWebGui()

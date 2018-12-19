@@ -13,7 +13,7 @@ log_initializer.set_root_level(DEBUG)
 logger = getLogger(__name__)
 
 
-class GtransWebTest(unittest.TestCase):
+class GTransWebTest(unittest.TestCase):
 
     def setUp(self):
         pass
@@ -60,7 +60,7 @@ class GtransWebTest(unittest.TestCase):
         self.assertEqual(tgt_text, 'this is a pen')
 
     def test_gtransweb_async_infinite(self):
-        gtrans = GTransWebAsync(headless=True, queue_size=0)  # Infinite length
+        gtrans_async = GTransWebAsync(headless=True, queue_size=0)  # Infinite
         self.async_cnt = 0
         self.async_finish = Event()
 
@@ -76,17 +76,17 @@ class GtransWebTest(unittest.TestCase):
                 self.async_finish.set()
             self.async_cnt += 1
 
-        gtrans.set_callback(callback)
+        gtrans_async.set_callback(callback)
 
-        gtrans.translate('en', 'ja', 'This is a pen')
-        gtrans.translate('en', 'ja', 'This is an apple')
-        gtrans.translate('ja', 'en', 'これはペンです')
-        gtrans.translate('ja', 'en', 'これはリンゴです')
+        gtrans_async.translate('en', 'ja', 'This is a pen')
+        gtrans_async.translate('en', 'ja', 'This is an apple')
+        gtrans_async.translate('ja', 'en', 'これはペンです')
+        gtrans_async.translate('ja', 'en', 'これはリンゴです')
 
         self.async_finish.wait()
 
     def test_gtransweb_async(self):
-        gtrans = GTransWebAsync(headless=True, queue_size=1)  # Infinite length
+        gtrans_async = GTransWebAsync(headless=True, queue_size=1)  # only 1
         self.async_cnt = 0
         self.async_finish = Event()
 
@@ -98,12 +98,12 @@ class GtransWebTest(unittest.TestCase):
                 self.async_finish.set()
             self.async_cnt += 1
 
-        gtrans.set_callback(callback)
+        gtrans_async.set_callback(callback)
 
-        gtrans.translate('en', 'ja', 'This is a pen')     # Accept
-        gtrans.translate('en', 'ja', 'This is an apple')  # Ignore
-        gtrans.translate('ja', 'en', 'これはペンです')    # Ignore
-        gtrans.translate('ja', 'en', 'これはリンゴです')  # Accept
+        gtrans_async.translate('en', 'ja', 'This is a pen')     # Accept
+        gtrans_async.translate('en', 'ja', 'This is an apple')  # Ignore
+        gtrans_async.translate('ja', 'en', 'これはペンです')    # Ignore
+        gtrans_async.translate('ja', 'en', 'これはリンゴです')  # Accept
 
         self.async_finish.wait()
 
