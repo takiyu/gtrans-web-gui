@@ -38,7 +38,7 @@ class GtransWebTest(unittest.TestCase):
         self.assertIsNotNone(browser)
         browser.quit()
 
-    def test_gtrans_web(self):
+    def test_gtransweb(self):
         gtrans = GTransWeb(headless=True)
 
         tgt_text = gtrans.translate('en', 'ja', 'This is a pen')

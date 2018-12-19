@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-
 import urllib.parse as urllib_parse
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 
 # logging
 from logging import getLogger, NullHandler
@@ -60,6 +59,7 @@ def _create_any_browser(modes, headless):
 
 
 class GTransWeb(object):
+
     def __init__(self, browser_modes=['chrome', 'firefox'], headless=True):
         # Create browser
         self._browser = _create_any_browser(browser_modes, headless)
@@ -75,22 +75,39 @@ class GTransWeb(object):
     def translate(self, src_lang, tgt_lang, src_text, timeout=5):
         ''' Translate via Google website '''
 
+        CLR_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/' + \
+                    'div[1]/div[2]/div/div/div[2]/div[1]/div'
+        RES_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/' + \
+                    'div[2]/div[2]/div[1]/div[2]/div/span[1]'
+
+        # Remove previous text
+        try:
+            clear_btn = self._browser.find_element_by_xpath(CLR_XPATH)
+            clear_btn.click()
+        except NoSuchElementException:
+            pass
+
+        # Wait for removing previous result
+        try:
+            WebDriverWait(self._browser, timeout).until(
+                    EC.invisibility_of_element_located((By.XPATH, CLR_XPATH)))
+            WebDriverWait(self._browser, timeout).until(
+                    EC.invisibility_of_element_located((By.XPATH, RES_XPATH)))
+        except TimeoutException:
+            pass
+
         # Encode for URL
         src_text = urllib_parse.quote_plus(src_text.encode('utf-8'))
 
-        # Create URL
+        # Open translation URL
         url = 'https://translate.google.com/#view=home&op=translate&' + \
               f'sl={src_lang}&tl={tgt_lang}&text={src_text}'
-
-        # Open
         self._browser.get(url)
 
         # Extract result by XPath
-        xpath = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/' + \
-                'div[2]/div[1]/div[2]/div/span[1]'
         try:
             result_elem = WebDriverWait(self._browser, timeout).until(
-                    EC.visibility_of_element_located((By.XPATH, xpath)))
+                    EC.visibility_of_element_located((By.XPATH, RES_XPATH)))
             tgt_text = result_elem.text
             return tgt_text
 
