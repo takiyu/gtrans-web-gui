@@ -72,25 +72,18 @@ class GTransWeb(object):
             except ImportError:
                 pass  # Escape ImportError in __del__() of Python3.
 
-    def translate(self, src_lang, tgt_lang, src_text, timeout=5):
+    def translate(self, src_lang, tgt_lang, src_text, timeout=100):
         ''' Translate via Google website '''
 
-        CLR_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/' + \
-                    'div[1]/div[2]/div/div/div[2]/div[1]/div'
         RES_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/' + \
                     'div[2]/div[2]/div[1]/div[2]/div/span[1]'
 
         # Remove previous text
-        try:
-            clear_btn = self._browser.find_element_by_xpath(CLR_XPATH)
-            clear_btn.click()
-        except NoSuchElementException:
-            pass
+        url = 'https://translate.google.com/#view=home&op=translate'
+        self._browser.get(url)
 
         # Wait for removing previous result
         try:
-            WebDriverWait(self._browser, timeout).until(
-                    EC.invisibility_of_element_located((By.XPATH, CLR_XPATH)))
             WebDriverWait(self._browser, timeout).until(
                     EC.invisibility_of_element_located((By.XPATH, RES_XPATH)))
         except TimeoutException:
