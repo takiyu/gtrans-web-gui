@@ -87,7 +87,7 @@ class GTransWeb(object):
 
         # Extract result by XPath
         xpath = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/' + \
-                'div[2]/div[1]/div[2]/div/span[1]/span'
+                'div[2]/div[1]/div[2]/div/span[1]'
         try:
             result_elem = WebDriverWait(self._browser, timeout).until(
                     EC.visibility_of_element_located((By.XPATH, xpath)))
