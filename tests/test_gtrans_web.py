@@ -43,14 +43,18 @@ class GtransWebTest(unittest.TestCase):
 
         tgt_text = gtrans.translate('en', 'ja', 'This is a pen')
         self.assertEqual(tgt_text, 'これはペンです')
+        tgt_text = gtrans.translate('en', 'ja', 'This is an apple')
+        self.assertEqual(tgt_text, 'これはリンゴです')
 
-        tgt_text = gtrans.translate('ja', 'en', 'これはペンです')
+        tgt_text = gtrans.translate('ja', 'en', 'これはペンです').lower()
         self.assertEqual(tgt_text, 'this is a pen')
+        tgt_text = gtrans.translate('ja', 'en', 'これはリンゴです').lower()
+        self.assertEqual(tgt_text, 'this is an apple')
 
         tgt_text = gtrans.translate('auto', 'ja', 'This is a pen')
         self.assertEqual(tgt_text, 'これはペンです')
 
-        tgt_text = gtrans.translate('auto', 'en', 'これはペンです')
+        tgt_text = gtrans.translate('auto', 'en', 'これはペンです').lower()
         self.assertEqual(tgt_text, 'this is a pen')
 
 
