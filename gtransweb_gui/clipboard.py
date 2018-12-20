@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from collections import OrderedDict
+
 from PyQt5 import QtGui
 
 # logging
@@ -97,7 +99,8 @@ class Clipboard(object):
 
 def _enum_clip_modes(clip):
     ''' Enumerate available clipboard modes '''
-    modes = {'copy': QtGui.QClipboard.Clipboard}  # Common for all OS
+    modes = OrderedDict()
+    modes['copy'] = QtGui.QClipboard.Clipboard  # Common for all OS
     if clip.supportsSelection():
         modes['select'] = QtGui.QClipboard.Selection  # Mostly Linux
     if clip.supportsFindBuffer():

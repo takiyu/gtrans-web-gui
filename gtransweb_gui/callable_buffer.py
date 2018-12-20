@@ -3,6 +3,8 @@ from collections import deque
 from threading import Timer
 import time
 
+from PyQt5 import QtCore
+
 # logging
 from logging import getLogger, NullHandler
 logger = getLogger(__name__)
@@ -12,7 +14,7 @@ logger.addHandler(NullHandler())
 class CallableBuffer(object):
     def __init__(self):
         self._query = None  # Only newest one
-        self._timer = None
+        self._timer = False
 
         self._buftime = 0.5
 
@@ -30,12 +32,14 @@ class CallableBuffer(object):
 
         # Start new timer
         if not self._timer:
-            self._timer = Timer(self._buftime, self._postcall)
-            self._timer.start()
+            self._timer = True
+            QtCore.QTimer.singleShot(self._buftime * 1000, self._postcall)
+            # self._timer = Timer(self._buftime, self._postcall)
+            # self._timer.start()
 
     def _postcall(self):
         # Timer is finished
-        self._timer = None
+        self._timer = False
 
         # Decompose query
         callback, args, kwargs = self._query

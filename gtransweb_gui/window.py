@@ -17,26 +17,29 @@ LANGUAGES_INV = {v: k for k, v in LANGUAGES.items()}
 
 
 class Window(QtWidgets.QMainWindow):
-    def __init__(self, trans_func):
+    def __init__(self, trans_func, clip_func, clip_modes):
         logger.debug('New window is created')
         super(Window, self).__init__()
         self._trans_func = trans_func
+        self._clip_func = clip_func
 
         # Set window types
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
         self.setWindowTitle('GtransWeb')
 
         # Create GUI parts and layout
-        self._gui_parts = GuiParts(parent=self)
+        self._gui_parts = GuiParts(self, clip_modes)
         self._gui_layout = GuiLayout(self._gui_parts)
         # Connect event functions
-        self._gui_parts.set_connections(self._trans_func, self.swap_langs)
+        self._gui_parts.set_connections(self._trans_func, self.swap_langs,
+                                        self._clip_func)
 
         # GUI configuration
         self._qsettings = QtCore.QSettings('gtransweb-gui', 'window')
         # Load window geometry and state
         self._load_geometry(self._qsettings)
         self._load_langs(self._qsettings)
+        self._load_clip_mode(self._qsettings)
         self._gui_layout.load_splitter_state(self._qsettings)
 
         # Set layout
@@ -86,12 +89,22 @@ class Window(QtWidgets.QMainWindow):
         src, tgt = self.get_langs()
         self.set_langs(tgt, src)
 
+    def get_clip_mode(self):
+        ''' Get clip mode from combo '''
+        return self._gui_parts.clip_box.currentText()
+
+    def set_clip_mode(self, mode_str):
+        ''' Set clip mode to combo '''
+        idx = self._gui_parts.clip_box.findText(mode_str)
+        self._gui_parts.clip_box.setCurrentIndex(idx)
+
     # -------------------------------------------------------------------------
     # --------------------------- Overridden methods --------------------------
     def closeEvent(self, event):
         ''' Overridden method to save window states at exit '''
         self._save_geometry(self._qsettings)
         self._save_langs(self._qsettings)
+        self._save_clip_mode(self._qsettings)
         self._gui_layout.save_splitter_state(self._qsettings)
 
     def keyPressEvent(self, event):
@@ -122,35 +135,56 @@ class Window(QtWidgets.QMainWindow):
     def _save_langs(self, qsettings):
         qsettings.setValue('languages', self.get_langs())
 
+    def _load_clip_mode(self, qsettings):
+        mode = qsettings.value('clip_mode')
+        if mode is not None:
+            self.set_clip_mode(mode)
+        else:
+            self.set_clip_mode('copy')  # Set default
+
+    def _save_clip_mode(self, qsettings):
+        qsettings.setValue('clip_mode', self.get_clip_mode())
+
 
 class GuiParts(object):
-    def __init__(self, parent):
+    def __init__(self, parent, clip_modes):
         # Create Gui widget parts
+        # Splitter
         self.tgt_box = QtWidgets.QTextEdit(parent)
         self.src_box = QtWidgets.QTextEdit(parent)
-        self.swap_btn = QtWidgets.QPushButton("<-->", parent)
+
+        # 1st row
         self.src_lang_box = QtWidgets.QComboBox(parent)
         self.tgt_lang_box = QtWidgets.QComboBox(parent)
+        self.swap_btn = QtWidgets.QPushButton("<-->", parent)
         self.trans_btn = QtWidgets.QPushButton("Translate", parent)
 
-        # Set part styles
-        self._set_styles()
+        # 2nd row
+        self.clip_box = QtWidgets.QComboBox(parent)
 
-    def set_connections(self, trans_func, swap_langs):
+        # Set part styles
+        self._set_styles(clip_modes)
+
+    def set_connections(self, trans_func, swap_langs, clip_func):
         # Connect functions
         self.trans_btn.clicked.connect(lambda: trans_func())
         self.swap_btn.clicked.connect(lambda: swap_langs())
+        self.clip_box.currentTextChanged.connect(clip_func)
 
-    def _set_styles(self):
+    def _set_styles(self, clip_modes):
         # Set GUI styles
         self.tgt_box.setReadOnly(True)
         self.tgt_box.setAcceptRichText(True)
         self.src_box.setAcceptRichText(True)
-        self.swap_btn.setFixedWidth(50)
+
         self.src_lang_box.setFixedWidth(90)
         self.tgt_lang_box.setFixedWidth(90)
         self.src_lang_box.addItems(LANGUAGES.keys())
         self.tgt_lang_box.addItems(LANGUAGES.keys())
+        self.swap_btn.setFixedWidth(50)
+
+        self.clip_box.addItems(clip_modes)
+        self.clip_box.setFixedWidth(80)
 
 
 class GuiLayout(object):
@@ -162,25 +196,36 @@ class GuiLayout(object):
         self._splitter.setCollapsible(0, False)
         self._splitter.setCollapsible(1, False)
 
-        # Create horizontal bottom layout
-        self._bottom_layout = QtWidgets.QHBoxLayout()
-        self._bottom_layout.addWidget(gui_parts.src_lang_box)
-        self._bottom_layout.addWidget(gui_parts.swap_btn)
-        self._bottom_layout.addWidget(gui_parts.tgt_lang_box)
-        self._bottom_layout.addWidget(gui_parts.trans_btn)
+        # Create horizontal bottom layout (row1)
+        self._row1_layout = QtWidgets.QHBoxLayout()
+        self._row1_layout.addWidget(gui_parts.src_lang_box)
+        self._row1_layout.addWidget(gui_parts.swap_btn)
+        self._row1_layout.addWidget(gui_parts.tgt_lang_box)
+        self._row1_layout.addWidget(gui_parts.trans_btn)
+        self._row1_layout.setContentsMargins(0, 0, 0, 0)
         # Warp with a widget
-        self._bottom_widget = QtWidgets.QWidget()
-        self._bottom_widget.setLayout(self._bottom_layout)
-        self._bottom_widget.setContentsMargins(-5, -5, -5, -5)
+        self._row1_widget = QtWidgets.QWidget()
+        self._row1_widget.setLayout(self._row1_layout)
+        self._row1_widget.setContentsMargins(-3, -3, -3, -3)
+
+        # Create horizontal bottom layout (row2)
+        self._row2_layout = QtWidgets.QHBoxLayout()
+        self._row2_layout.addWidget(gui_parts.clip_box)
+        self._row2_layout.setContentsMargins(0, 0, 0, 0)
+        # Warp with a widget
+        self._row2_widget = QtWidgets.QWidget()
+        self._row2_widget.setLayout(self._row2_layout)
+        self._row2_widget.setContentsMargins(-3, -3, -3, -3)
 
         # Create vertical central layout
         self._central_layout = QtWidgets.QVBoxLayout()
         self._central_layout.addWidget(self._splitter)
-        self._central_layout.addWidget(self._bottom_widget)
+        self._central_layout.addWidget(self._row1_widget)
+        self._central_layout.addWidget(self._row2_widget)
+        self._central_layout.setContentsMargins(5, 5, 5, 5)
         # Warp with a widget
         self._central_widget = QtWidgets.QWidget()
         self._central_widget.setLayout(self._central_layout)
-        self._central_widget.setContentsMargins(-5, -5, -5, -5)
 
     def set_root(self, root_widget):
         root_widget.setCentralWidget(self._central_widget)

@@ -20,18 +20,18 @@ class GTransWebGui(object):
         # Qt application
         self._app = QtWidgets.QApplication([sys.argv[0]])
 
-        # Main window
-        self._window = Window(self._translate)
         # Clipboard and its handler
         self._clipboard = Clipboard(self._app)
         self._clip_handler = ClipboardHandler(self._clipboard)
         self._clip_handler.set_callback(self._on_clip_changed)
+        # Main window
+        self._window = Window(self._translate, self._on_clipmode_changed,
+                              self._clipboard.get_mode_strs())
         # Translation engine
         self._gtrans = GTransWeb(headless=True)
         atexit.register(self._gtrans.exit)
         # Buffer for selection mode
         self._select_buf = CallableBuffer()
-        self._select_buf.set_buftime(3)
 
     def run(self):
         ''' Run main application '''
@@ -64,6 +64,9 @@ class GTransWebGui(object):
         else:
             # Translate right now
             self._translate(src_text)
+
+    def _on_clipmode_changed(self, mode_str):
+        self._clipboard.set_mode(mode_str)
 
 
 if __name__ == '__main__':
