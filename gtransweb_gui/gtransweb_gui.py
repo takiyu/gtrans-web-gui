@@ -4,7 +4,7 @@ import atexit
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from gtransweb import GTransWebAsync
+from gtransweb import GTransWeb
 from clipboard import Clipboard, ClipboardHandler
 from callable_buffer import CallableBuffer
 from window import Window
@@ -27,9 +27,8 @@ class GTransWebGui(object):
         self._clip_handler = ClipboardHandler(self._clipboard)
         self._clip_handler.set_callback(self._on_clip_changed)
         # Translation engine
-        self._gtrans_async = GTransWebAsync(headless=True)
-        self._gtrans_async.set_callback(self._on_trans_finished)
-        atexit.register(self._gtrans_async.exit)
+        self._gtrans = GTransWeb(headless=True)
+        atexit.register(self._gtrans.exit)
         # Buffer for selection mode
         self._select_buf = CallableBuffer()
         self._select_buf.set_buftime(3)
@@ -53,7 +52,12 @@ class GTransWebGui(object):
             # Set text to GUI
             self._window.set_src_text(src_text)
         # Start translation
-        self._gtrans_async.translate(src_lang, tgt_lang, src_text)
+        tgt_text = self._gtrans.translate(src_lang, tgt_lang, src_text)
+
+        # Set to GUI
+        self._window.set_tgt_text(tgt_text)
+        # Set to clipboard
+        self._clip_handler.overwrite_clip(tgt_text)
 
     def _on_clip_changed(self, src_text):
         ''' When clipboard changed, start to translate. '''
@@ -63,13 +67,6 @@ class GTransWebGui(object):
         else:
             # Translate right now
             self._translate(src_text)
-
-    def _on_trans_finished(self, tgt_text):
-        ''' When translation finished, set to GUI and clipboard. '''
-        # Set to GUI
-#         self._window.set_tgt_text(tgt_text)
-        # Set to clipboard
-        self._clip_handler.overwrite_clip(tgt_text)
 
 
 if __name__ == '__main__':
