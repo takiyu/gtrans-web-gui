@@ -31,13 +31,12 @@ class Window(QtWidgets.QMainWindow):
         self._gui_layout = GuiLayout(self._gui_parts)
         # Connect event functions
         self._gui_parts.set_connections(self._trans_func, self.swap_langs)
-        # Set initial languages
-        self.set_langs('auto', 'ja')
 
         # GUI configuration
         self._qsettings = QtCore.QSettings('gtransweb-gui', 'window')
         # Load window geometry and state
         self._load_geometry(self._qsettings)
+        self._load_langs(self._qsettings)
         self._gui_layout.load_splitter_state(self._qsettings)
 
         # Set layout
@@ -88,7 +87,16 @@ class Window(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         ''' Overridden method to save window states at exit '''
         self._save_geometry(self._qsettings)
+        self._save_langs(self._qsettings)
         self._gui_layout.save_splitter_state(self._qsettings)
+
+    def keyPressEvent(self, event):
+        ''' Overridden method to handle key inputs '''
+        key = event.key()
+        if key == QtCore.Qt.Key_Return:
+            self._trans_func()
+        else:
+            super(Window, self).keyPressEvent(event)
 
     def _load_geometry(self, qsettings):
         geom = qsettings.value('geometry')
@@ -97,6 +105,16 @@ class Window(QtWidgets.QMainWindow):
 
     def _save_geometry(self, qsettings):
         qsettings.setValue('geometry', self.saveGeometry())
+
+    def _load_langs(self, qsettings):
+        langs = qsettings.value('languages')
+        if langs is not None:
+            self.set_langs(*langs)
+        else:
+            self.set_langs('auto', 'ja')  # Set default
+
+    def _save_langs(self, qsettings):
+        qsettings.setValue('languages', self.get_langs())
 
 
 class GuiParts(object):
