@@ -17,11 +17,12 @@ LANGUAGES_INV = {v: k for k, v in LANGUAGES.items()}
 
 
 class Window(QtWidgets.QMainWindow):
-    def __init__(self, trans_func, clip_func, clip_modes):
+    def __init__(self, trans_func, clip_func, headless_func, clip_modes):
         logger.debug('New window is created')
         super(Window, self).__init__()
         self._trans_func = trans_func
         self._clip_func = clip_func
+        self._headless_func = headless_func
 
         # Set window types
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Dialog)
@@ -32,7 +33,7 @@ class Window(QtWidgets.QMainWindow):
         self._gui_layout = GuiLayout(self._gui_parts)
         # Connect event functions
         self._gui_parts.set_connections(self._trans_func, self.swap_langs,
-                                        self._clip_func)
+                                        self._clip_func, self._headless_func)
 
         # GUI configuration
         self._qsettings = QtCore.QSettings('gtransweb-gui', 'window')
@@ -40,6 +41,7 @@ class Window(QtWidgets.QMainWindow):
         self._load_geometry(self._qsettings)
         self._load_langs(self._qsettings)
         self._load_clip_mode(self._qsettings)
+        self._load_headless(self._qsettings)
         self._gui_layout.load_splitter_state(self._qsettings)
 
         # Set layout
@@ -98,6 +100,14 @@ class Window(QtWidgets.QMainWindow):
         idx = self._gui_parts.clip_box.findText(mode_str)
         self._gui_parts.clip_box.setCurrentIndex(idx)
 
+    def get_headless(self):
+        ''' Get headless mode from checkbox '''
+        return bool(self._gui_parts.headless_box.isChecked())
+
+    def set_headless(self, checked):
+        ''' Set headless mode to checkbox '''
+        self._gui_parts.headless_box.setChecked(bool(checked))
+
     # -------------------------------------------------------------------------
     # --------------------------- Overridden methods --------------------------
     def closeEvent(self, event):
@@ -105,6 +115,7 @@ class Window(QtWidgets.QMainWindow):
         self._save_geometry(self._qsettings)
         self._save_langs(self._qsettings)
         self._save_clip_mode(self._qsettings)
+        self._save_headless(self._qsettings)
         self._gui_layout.save_splitter_state(self._qsettings)
 
     def keyPressEvent(self, event):
@@ -140,10 +151,20 @@ class Window(QtWidgets.QMainWindow):
         if mode is not None:
             self.set_clip_mode(mode)
         else:
-            self.set_clip_mode('copy')  # Set default
+            self.set_clip_mode('copy')  # set default
 
     def _save_clip_mode(self, qsettings):
         qsettings.setValue('clip_mode', self.get_clip_mode())
+
+    def _load_headless(self, qsettings):
+        mode = qsettings.value('headless')
+        if mode is not None:
+            self.set_headless(mode == 'true')
+        else:
+            self.set_headless(True)  # Set default
+
+    def _save_headless(self, qsettings):
+        qsettings.setValue('headless', self.get_headless())
 
 
 class GuiParts(object):
@@ -156,20 +177,23 @@ class GuiParts(object):
         # 1st row
         self.src_lang_box = QtWidgets.QComboBox(parent)
         self.tgt_lang_box = QtWidgets.QComboBox(parent)
-        self.swap_btn = QtWidgets.QPushButton("<-->", parent)
-        self.trans_btn = QtWidgets.QPushButton("Translate", parent)
+        self.swap_btn = QtWidgets.QPushButton('<-->', parent)
+        self.trans_btn = QtWidgets.QPushButton('Translate', parent)
 
         # 2nd row
         self.clip_box = QtWidgets.QComboBox(parent)
+        self.headless_box = QtWidgets.QCheckBox('Headless browser', parent)
 
         # Set part styles
         self._set_styles(clip_modes)
 
-    def set_connections(self, trans_func, swap_langs, clip_func):
+    def set_connections(self, trans_func, swap_langs, clip_func,
+                        headless_func):
         # Connect functions
         self.trans_btn.clicked.connect(lambda: trans_func())
         self.swap_btn.clicked.connect(lambda: swap_langs())
         self.clip_box.currentTextChanged.connect(clip_func)
+        self.headless_box.clicked.connect(headless_func)
 
     def _set_styles(self, clip_modes):
         # Set GUI styles
@@ -211,6 +235,7 @@ class GuiLayout(object):
         # Create horizontal bottom layout (row2)
         self._row2_layout = QtWidgets.QHBoxLayout()
         self._row2_layout.addWidget(gui_parts.clip_box)
+        self._row2_layout.addWidget(gui_parts.headless_box)
         self._row2_layout.setContentsMargins(0, 0, 0, 0)
         # Warp with a widget
         self._row2_widget = QtWidgets.QWidget()

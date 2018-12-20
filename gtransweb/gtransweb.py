@@ -23,13 +23,16 @@ RES_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[2]/' + \
 
 class GTransWeb(object):
     def __init__(self, browser_modes=['chrome', 'firefox'], headless=True,
-                 timeout=10):
+                 timeout=5):
         self._browser_modes = browser_modes
         self._headless = headless
         self._timeout = timeout  # sec
 
         # Create browser first
         self._create_browser()
+
+    def is_headless(self):
+        return self._headless
 
     def _create_browser(self):
         # Close previous browser
@@ -93,7 +96,7 @@ class GTransWeb(object):
 
 class GTransWebAsync(object):
     def __init__(self, browser_modes=['chrome', 'firefox'], headless=True,
-                 timeout=10, queue_size=1, query_interval=0.05):
+                 timeout=5, queue_size=1, query_interval=0.05):
         self._gtransweb = GTransWeb(browser_modes, headless, timeout)
 
         self._query_queue = Queue(maxsize=queue_size)

@@ -26,16 +26,23 @@ class GTransWebGui(object):
         self._clip_handler.set_callback(self._on_clip_changed)
         # Main window
         self._window = Window(self._translate, self._on_clipmode_changed,
+                              self._on_headless_changed,
                               self._clipboard.get_mode_strs())
-        # Translation engine
-        self._gtrans = GTransWeb(headless=True)
-        atexit.register(self._gtrans.exit)
+        # Translation engine (set by event `_on_headless_changed()`)
+        self._gtrans = GTransWeb(headless=self._window.get_headless())
         # Buffer for selection mode
         self._select_buf = CallableBuffer()
+
+        # Exit function should be call at exit
+        atexit.register(self.exit)
 
     def run(self):
         ''' Run main application '''
         self._app.exec_()
+
+    def exit(self):
+        ''' Exit application '''
+        self._gtrans.exit()
 
     def _translate(self, src_text=None):
         ''' Translate passed text. If not passed, it will be get from GUI. '''
@@ -66,7 +73,16 @@ class GTransWebGui(object):
             self._translate(src_text)
 
     def _on_clipmode_changed(self, mode_str):
+        ''' When GUI changed, connect to clipboard'''
         self._clipboard.set_mode(mode_str)
+
+    def _on_headless_changed(self, checked):
+        ''' When GUI changed, connect to gtrans '''
+        checked = bool(checked)
+        if checked != self._gtrans.is_headless():
+            # Restart browser
+            self._gtrans.exit()
+            self._gtrans = GTransWeb(headless=checked)
 
 
 if __name__ == '__main__':
