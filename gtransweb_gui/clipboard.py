@@ -12,7 +12,6 @@ class ClipboardHandler(object):
         self._clipboard = clipboard
 
         self._callback = None
-        self._overwrite_flag = True
         self._skip_flag = False  # Flag for escaping recursing
 
         # Connect event handling
@@ -21,24 +20,18 @@ class ClipboardHandler(object):
     def set_callback(self, callback):
         ''' Set callback which is call when clipboard changed
             :param callback: Callback function. It must perform
-                             `tgt_text = callback(src_text)`. If `tgt_text` is
-                             not string, no overwriting will be happen.
+                             `callback(src_text)`.
         '''
         self._callback = callback
 
-    def get_overwrite_flag(self):
-        ''' Get a flag for clipboard overwriting '''
-        return self._overwrite_flag
-
-    def set_overwrite_flag(self, flag):
-        ''' Set a flag for clipboard overwriting '''
-        self._overwrite_flag = flag
+    def overwrite_clip(self, text):
+        # Set for escaping recursive calling
+        self._skip_flag = True
+        # Overwrite
+        self._clipboard.set_text(text)
 
     def __call__(self, mode):
         ''' Entry point of changing event handling '''
-        if not callable(self._callback):
-            return
-
         # Eliminate the clipboard mode
         if mode != self._clipboard.get_mode():
             return
@@ -48,12 +41,13 @@ class ClipboardHandler(object):
             self._skip_flag = False
             return
 
+        # Check callback
+        if not callable(self._callback):
+            return
+
         # Run callback
         src_text = self._clipboard.get_text()
-        tgt_text = self._callback(src_text)
-        if self._overwrite_flag and isinstance(tgt_text, str):
-            self._skip_flag = True  # Set for escaping recursive calling
-            self._clipboard.set_text(tgt_text)
+        self._callback(src_text)
 
 
 class Clipboard(object):

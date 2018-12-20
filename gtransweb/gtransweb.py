@@ -112,7 +112,10 @@ class GTransWebAsync(object):
             tgt_text = self._gtransweb.translate(*query)
 
             # Pass the result
-            self._callback(tgt_text)
+            if callable(self._callback):
+                self._callback(tgt_text)
+            else:
+                logger.error('Callback is not set')
 
 
 def _create_browser(mode, headless=True):
