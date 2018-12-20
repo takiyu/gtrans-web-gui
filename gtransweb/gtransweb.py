@@ -29,13 +29,10 @@ class GTransWeb(object):
         # Open top page
         self._browser.get(TOP_URL)
 
-    def __del__(self):
+    def exit(self):
+        # Close browser
         if self._browser:
-            # Close browser
-            try:
-                self._browser.quit()
-            except ImportError:
-                pass  # Escape ImportError in __del__() of Python3.
+            self._browser.quit()
 
     def translate(self, src_lang, tgt_lang, src_text, timeout=10):
         ''' Translate via Google website '''
@@ -73,12 +70,16 @@ class GTransWebAsync(object):
                  queue_size=1, query_interval=0.05):
         self._gtransweb = GTransWeb(browser_modes, headless)
 
-        self._inp_queue = Queue(maxsize=queue_size)
+        self._query_queue = Queue(maxsize=queue_size)
         self._query_interval = query_interval
-        self._thread = Thread(target=self._back_loop, daemon=True)
+        self._thread = Thread(target=self._trans_loop, daemon=True)
         self._callback = None
 
         self._thread.start()
+
+    def exit(self):
+        # Close browser
+        self._gtransweb.exit()
 
     def set_callback(self, callback):
         ''' Set callback which is call when translation is finished
@@ -93,21 +94,21 @@ class GTransWebAsync(object):
         while True:
             try:
                 # Push new item
-                self._inp_queue.put_nowait(query)
+                self._query_queue.put_nowait(query)
                 # Success
                 return
             except Full:
                 # Pop oldest item
                 try:
                     time.sleep(self._query_interval)
-                    self._inp_queue.get_nowait()
+                    self._query_queue.get_nowait()
                 except Empty:
                     pass
 
-    def _back_loop(self):
+    def _trans_loop(self):
         while True:
             # Wait for query
-            query = self._inp_queue.get()
+            query = self._query_queue.get()
 
             # Translate
             tgt_text = self._gtransweb.translate(*query)
