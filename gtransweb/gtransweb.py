@@ -32,11 +32,8 @@ class GTransWeb(object):
         self._create_browser()
 
     def _create_browser(self):
-        # Try to close browser
-        try:
-            self.exit()
-        except Exception:
-            pass
+        # Close previous browser
+        self.exit()
         # Create
         self._browser = _create_any_browser(self._browser_modes,
                                             self._headless)
@@ -44,9 +41,12 @@ class GTransWeb(object):
         self._browser.get(TOP_URL)
 
     def exit(self):
-        # Close browser
-        if self._browser:
-            self._browser.quit()
+        # Try to close browser
+        try:
+            if self._browser:
+                self._browser.quit()
+        except Exception:
+            pass
 
     def translate(self, src_lang, tgt_lang, src_text):
         ''' Translate via Google website '''
