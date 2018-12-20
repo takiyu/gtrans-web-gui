@@ -46,6 +46,8 @@ class Window(QtWidgets.QMainWindow):
         self.show()
         self.raise_()
 
+    # -------------------------------------------------------------------------
+    # ---------------------------- Getter / Setter ----------------------------
     def get_langs(self):
         ''' Get source and target languages '''
         src = self._gui_parts.src_lang_box.currentText()
@@ -84,6 +86,8 @@ class Window(QtWidgets.QMainWindow):
         src, tgt = self.get_langs()
         self.set_langs(tgt, src)
 
+    # -------------------------------------------------------------------------
+    # --------------------------- Overridden methods --------------------------
     def closeEvent(self, event):
         ''' Overridden method to save window states at exit '''
         self._save_geometry(self._qsettings)
@@ -98,6 +102,8 @@ class Window(QtWidgets.QMainWindow):
         else:
             super(Window, self).keyPressEvent(event)
 
+    # -------------------------------------------------------------------------
+    # ----------------------------- Loader / Saver ----------------------------
     def _load_geometry(self, qsettings):
         geom = qsettings.value('geometry')
         if geom is not None:

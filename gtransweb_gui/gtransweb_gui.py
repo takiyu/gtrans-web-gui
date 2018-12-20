@@ -2,7 +2,7 @@
 import sys
 import atexit
 
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtWidgets
 
 from gtransweb import GTransWeb
 from clipboard import Clipboard, ClipboardHandler
@@ -32,9 +32,6 @@ class GTransWebGui(object):
         # Buffer for selection mode
         self._select_buf = CallableBuffer()
         self._select_buf.set_buftime(3)
-
-        # Qt settings
-        qsettings = QtCore.QSettings('gtransweb-gui', 'gtanswebgui')
 
     def run(self):
         ''' Run main application '''
