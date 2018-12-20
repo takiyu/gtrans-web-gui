@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import urllib.parse as urllib_parse
 from threading import Thread
 from queue import Queue, Full, Empty
@@ -8,12 +7,18 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 
 # logging
 from logging import getLogger, NullHandler
 logger = getLogger(__name__)
 logger.addHandler(NullHandler())
+
+TOP_URL = 'https://translate.google.com/#view=home&op=translate'
+TRA_URL = 'https://translate.google.com/#view=home&op=translate&' + \
+          'sl={}&tl={}&text={}'
+RES_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[2]/' + \
+            'div[1]/div[2]/div/span[1]'
 
 
 class GTransWeb(object):
@@ -21,6 +26,8 @@ class GTransWeb(object):
     def __init__(self, browser_modes=['chrome', 'firefox'], headless=True):
         # Create browser
         self._browser = _create_any_browser(browser_modes, headless)
+        # Open top page
+        self._browser.get(TOP_URL)
 
     def __del__(self):
         if self._browser:
@@ -33,12 +40,8 @@ class GTransWeb(object):
     def translate(self, src_lang, tgt_lang, src_text, timeout=10):
         ''' Translate via Google website '''
 
-        RES_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/' + \
-                    'div[2]/div[2]/div[1]/div[2]/div/span[1]'
-
         # Remove previous text
-        url = 'https://translate.google.com/#view=home&op=translate'
-        self._browser.get(url)
+        self._browser.get(TOP_URL)
 
         # Wait for removing previous result
         try:
@@ -51,9 +54,7 @@ class GTransWeb(object):
         src_text = urllib_parse.quote_plus(src_text.encode('utf-8'))
 
         # Open translation URL
-        url = 'https://translate.google.com/#view=home&op=translate&' + \
-              f'sl={src_lang}&tl={tgt_lang}&text={src_text}'
-        self._browser.get(url)
+        self._browser.get(TRA_URL.format(src_lang, tgt_lang, src_text))
 
         # Extract result by XPath
         try:

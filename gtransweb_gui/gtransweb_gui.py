@@ -33,7 +33,7 @@ class GTransWebGui(object):
         select_buf = CallableBuffer()
         select_buf.set_buftime(3)
 
-        gtrans_async = GTransWebAsync(headless=True)
+        gtrans_async = GTransWebAsync(headless=False)
         gtrans_async.set_callback(on_trans_finished)
 
         # Start

@@ -46,12 +46,9 @@ class ClipboardHandler(object):
             if skip:
                 return
 
-        # Check callback
-        if not callable(self._callback):
-            return
-
         # Run callback
-        self._callback(src_text)
+        if callable(self._callback):
+            self._callback(src_text)
 
 
 class Clipboard(object):
