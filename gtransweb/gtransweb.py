@@ -30,7 +30,7 @@ class GTransWeb(object):
             except ImportError:
                 pass  # Escape ImportError in __del__() of Python3.
 
-    def translate(self, src_lang, tgt_lang, src_text, timeout=100):
+    def translate(self, src_lang, tgt_lang, src_text, timeout=10):
         ''' Translate via Google website '''
 
         RES_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/' + \
@@ -87,7 +87,7 @@ class GTransWebAsync(object):
         '''
         self._callback = callback
 
-    def translate(self, src_lang, tgt_lang, src_text, timeout=100):
+    def translate(self, src_lang, tgt_lang, src_text, timeout=10):
         query = (src_lang, tgt_lang, src_text, timeout)
         while True:
             try:

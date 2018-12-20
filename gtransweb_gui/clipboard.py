@@ -12,7 +12,7 @@ class ClipboardHandler(object):
         self._clipboard = clipboard
 
         self._callback = None
-        self._skip_flag = False  # Flag for escaping recursing
+        self._skip_str = None  # Flag and string for escaping recursing
 
         # Connect event handling
         self._clipboard.connect(self)
@@ -26,7 +26,7 @@ class ClipboardHandler(object):
 
     def overwrite_clip(self, text):
         # Set for escaping recursive calling
-        self._skip_flag = True
+        self._skip_str = text
         # Overwrite
         self._clipboard.set_text(text)
 
@@ -36,17 +36,21 @@ class ClipboardHandler(object):
         if mode != self._clipboard.get_mode():
             return
 
-        # Escape recursive calling
-        if self._skip_flag:
-            self._skip_flag = False
-            return
+        # Get current clipboard text
+        src_text = self._clipboard.get_text()
+
+        # Escape recursive calling (reset flag and skip when text is same)
+        if self._skip_str is not None:
+            skip = (self._skip_str == src_text)
+            self._skip_str = None
+            if skip:
+                return
 
         # Check callback
         if not callable(self._callback):
             return
 
         # Run callback
-        src_text = self._clipboard.get_text()
         self._callback(src_text)
 
 
