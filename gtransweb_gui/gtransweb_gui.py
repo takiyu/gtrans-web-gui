@@ -61,7 +61,8 @@ class GTransWebGui(object):
         # Set to GUI
         self._window.set_tgt_text(tgt_text)
         # Set to clipboard
-        self._clip_handler.overwrite_clip(tgt_text)
+        if self._window.get_overwrite():
+            self._clip_handler.overwrite_clip(tgt_text)
 
     def _on_clip_changed(self, src_text):
         ''' When clipboard changed, start to translate. '''

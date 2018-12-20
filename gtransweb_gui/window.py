@@ -42,6 +42,7 @@ class Window(QtWidgets.QMainWindow):
         self._load_langs(self._qsettings)
         self._load_clip_mode(self._qsettings)
         self._load_headless(self._qsettings)
+        self._load_overwrite(self._qsettings)
         self._gui_layout.load_splitter_state(self._qsettings)
 
         # Set layout
@@ -108,6 +109,14 @@ class Window(QtWidgets.QMainWindow):
         ''' Set headless mode to checkbox '''
         self._gui_parts.headless_box.setChecked(bool(checked))
 
+    def get_overwrite(self):
+        ''' Get overwriting mode from checkbox '''
+        return bool(self._gui_parts.overwrite_box.isChecked())
+
+    def set_overwrite(self, checked):
+        ''' Set overwriting mode to checkbox '''
+        self._gui_parts.overwrite_box.setChecked(bool(checked))
+
     # -------------------------------------------------------------------------
     # --------------------------- Overridden methods --------------------------
     def closeEvent(self, event):
@@ -116,6 +125,7 @@ class Window(QtWidgets.QMainWindow):
         self._save_langs(self._qsettings)
         self._save_clip_mode(self._qsettings)
         self._save_headless(self._qsettings)
+        self._save_overwrite(self._qsettings)
         self._gui_layout.save_splitter_state(self._qsettings)
 
     def keyPressEvent(self, event):
@@ -166,6 +176,16 @@ class Window(QtWidgets.QMainWindow):
     def _save_headless(self, qsettings):
         qsettings.setValue('headless', self.get_headless())
 
+    def _load_overwrite(self, qsettings):
+        mode = qsettings.value('overwrite')
+        if mode is not None:
+            self.set_overwrite(mode == 'true')
+        else:
+            self.set_overwrite(True)  # Set default
+
+    def _save_overwrite(self, qsettings):
+        qsettings.setValue('overwrite', self.get_overwrite())
+
 
 class GuiParts(object):
     def __init__(self, parent, clip_modes):
@@ -183,6 +203,7 @@ class GuiParts(object):
         # 2nd row
         self.clip_box = QtWidgets.QComboBox(parent)
         self.headless_box = QtWidgets.QCheckBox('Headless browser', parent)
+        self.overwrite_box = QtWidgets.QCheckBox('Overwrite clipboard', parent)
 
         # Set part styles
         self._set_styles(clip_modes)
@@ -236,6 +257,7 @@ class GuiLayout(object):
         self._row2_layout = QtWidgets.QHBoxLayout()
         self._row2_layout.addWidget(gui_parts.clip_box)
         self._row2_layout.addWidget(gui_parts.headless_box)
+        self._row2_layout.addWidget(gui_parts.overwrite_box)
         self._row2_layout.setContentsMargins(0, 0, 0, 0)
         # Warp with a widget
         self._row2_widget = QtWidgets.QWidget()
