@@ -7,7 +7,7 @@ import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 
 # logging
 from logging import getLogger, NullHandler
@@ -22,10 +22,24 @@ RES_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[2]/' + \
 
 
 class GTransWeb(object):
+    def __init__(self, browser_modes=['chrome', 'firefox'], headless=True,
+                 timeout=10):
+        self._browser_modes = browser_modes
+        self._headless = headless
+        self._timeout = timeout  # sec
 
-    def __init__(self, browser_modes=['chrome', 'firefox'], headless=True):
-        # Create browser
-        self._browser = _create_any_browser(browser_modes, headless)
+        # Create browser first
+        self._create_browser()
+
+    def _create_browser(self):
+        # Try to close browser
+        try:
+            self.exit()
+        except Exception:
+            pass
+        # Create
+        self._browser = _create_any_browser(self._browser_modes,
+                                            self._headless)
         # Open top page
         self._browser.get(TOP_URL)
 
@@ -34,15 +48,24 @@ class GTransWeb(object):
         if self._browser:
             self._browser.quit()
 
-    def translate(self, src_lang, tgt_lang, src_text, timeout=10):
+    def translate(self, src_lang, tgt_lang, src_text):
         ''' Translate via Google website '''
+        while True:
+            # Try to translate
+            try:
+                return self._translate(src_lang, tgt_lang, src_text)
+            except WebDriverException:
+                # Restart browser
+                self._create_browser()
+                # Try again
 
+    def _translate(self, src_lang, tgt_lang, src_text):
         # Remove previous text
         self._browser.get(TOP_URL)
 
         # Wait for removing previous result
         try:
-            WebDriverWait(self._browser, timeout).until(
+            WebDriverWait(self._browser, self._timeout).until(
                     EC.invisibility_of_element_located((By.XPATH, RES_XPATH)))
         except TimeoutException:
             pass
@@ -55,7 +78,7 @@ class GTransWeb(object):
 
         # Extract result by XPath
         try:
-            result_elem = WebDriverWait(self._browser, timeout).until(
+            result_elem = WebDriverWait(self._browser, self._timeout).until(
                     EC.visibility_of_element_located((By.XPATH, RES_XPATH)))
             tgt_text = result_elem.text
             return tgt_text
@@ -67,8 +90,8 @@ class GTransWeb(object):
 
 class GTransWebAsync(object):
     def __init__(self, browser_modes=['chrome', 'firefox'], headless=True,
-                 queue_size=1, query_interval=0.05):
-        self._gtransweb = GTransWeb(browser_modes, headless)
+                 timeout=10, queue_size=1, query_interval=0.05):
+        self._gtransweb = GTransWeb(browser_modes, headless, timeout)
 
         self._query_queue = Queue(maxsize=queue_size)
         self._query_interval = query_interval
@@ -89,8 +112,8 @@ class GTransWebAsync(object):
         '''
         self._callback = callback
 
-    def translate(self, src_lang, tgt_lang, src_text, timeout=10):
-        query = (src_lang, tgt_lang, src_text, timeout)
+    def translate(self, src_lang, tgt_lang, src_text):
+        query = (src_lang, tgt_lang, src_text)
         while True:
             try:
                 # Push new item
