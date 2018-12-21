@@ -100,6 +100,7 @@ class Clipboard(object):
 def _enum_clip_modes(clip):
     ''' Enumerate available clipboard modes '''
     modes = OrderedDict()
+    modes['disabled'] = None
     modes['copy'] = QtGui.QClipboard.Clipboard  # Common for all OS
     if clip.supportsSelection():
         modes['select'] = QtGui.QClipboard.Selection  # Mostly Linux
