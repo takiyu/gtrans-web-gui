@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets
 
 # logging
 from logging import getLogger, NullHandler
