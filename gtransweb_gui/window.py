@@ -229,7 +229,7 @@ class GuiParts(object):
         self.swap_btn.setFixedWidth(50)
 
         self.clip_box.addItems(clip_modes)
-        self.clip_box.setFixedWidth(90)
+        self.clip_box.setFixedWidth(80)
 
         self.headless_box.setFixedWidth(140)
 
