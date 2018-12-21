@@ -231,6 +231,8 @@ class GuiParts(object):
         self.clip_box.addItems(clip_modes)
         self.clip_box.setFixedWidth(80)
 
+        self.headless_box.setFixedWidth(140)
+
 
 class GuiLayout(object):
     def __init__(self, gui_parts):
