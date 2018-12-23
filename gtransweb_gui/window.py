@@ -160,10 +160,10 @@ class Window(QtWidgets.QMainWindow):
 
     def _load_clip_mode(self, qsettings):
         mode = qsettings.value('clip_mode')
-        if mode is not None:
-            self.set_clip_mode(mode)
-        else:
-            self.set_clip_mode('copy')  # set default
+        if mode is None:
+            mode = 'copy'  # Set default
+        self.set_clip_mode(mode)  # Set GUI
+        self._clip_func(mode)  # Pass to model first
 
     def _save_clip_mode(self, qsettings):
         qsettings.setValue('clip_mode', self.get_clip_mode())
