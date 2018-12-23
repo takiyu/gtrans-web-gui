@@ -133,6 +133,8 @@ class Window(QtWidgets.QMainWindow):
         key = event.key()
         if key == QtCore.Qt.Key_Return:
             self._trans_func()
+        elif key == QtCore.Qt.Key_T:
+            self.swap_langs()
         else:
             super(Window, self).keyPressEvent(event)
 

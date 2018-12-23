@@ -64,7 +64,7 @@ class GTransWeb(object):
 
     def _translate(self, src_lang, tgt_lang, src_text):
         if not src_text:
-            return
+            return ''
 
         # Remove previous text
         self._browser.get(TOP_URL)
