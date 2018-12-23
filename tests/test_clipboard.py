@@ -29,7 +29,10 @@ class ClipboardTest(unittest.TestCase):
         for mode in modes:
             clipboard.set_mode(mode)
             self.assertEqual(clipboard.get_mode_str(), mode)
-            self.assertIsInstance(clipboard.get_mode(), int)
+            if mode == 'none':
+                self.assertEqual(clipboard.get_mode(), None)
+            else:
+                self.assertIsInstance(clipboard.get_mode(), int)
 
     def test_clipboard_text(self):
         clipboard = Clipboard(self.app)
@@ -42,7 +45,10 @@ class ClipboardTest(unittest.TestCase):
             # Set and get via clipboard
             text = f'test_{mode}_123_てすと_試験'
             clipboard.set_text(text)
-            self.assertEqual(clipboard.get_text(), text)
+            if mode == 'none':
+                self.assertEqual(clipboard.get_text(), '')
+            else:
+                self.assertEqual(clipboard.get_text(), text)
 
     def test_clipboard_handler(self):
         clipboard = Clipboard(self.app)
@@ -52,6 +58,7 @@ class ClipboardTest(unittest.TestCase):
         modes = clipboard.get_mode_strs()
         for mode in modes:
             clipboard.set_mode(mode)
+            self.callback_res = None
 
             # Define callback and set
             def callback(src_text):
@@ -63,12 +70,21 @@ class ClipboardTest(unittest.TestCase):
             clipboard.set_text(src_text)
 
             # Check callback result
-            self.assertEqual(self.callback_res, f'{src_text}_callback_{mode}')
+            if mode == 'none':
+                self.assertEqual(self.callback_res, None)
+            else:
+                self.assertEqual(self.callback_res,
+                                 f'{src_text}_callback_{mode}')
 
-            # Check overwriting clipboard dose not affect callback
+            # Check overwriting clipboard via handler dose not affect callback
             handler.overwrite_clip('abc')
-            self.assertEqual(clipboard.get_text(), 'abc')
-            self.assertEqual(self.callback_res, f'{src_text}_callback_{mode}')
+            if mode == 'none':
+                self.assertEqual(clipboard.get_text(), '')
+                self.assertEqual(self.callback_res, None)
+            else:
+                self.assertEqual(clipboard.get_text(), 'abc')
+                self.assertEqual(self.callback_res,
+                                 f'{src_text}_callback_{mode}')
 
 
 if __name__ == '__main__':
