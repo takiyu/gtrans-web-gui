@@ -86,14 +86,20 @@ class Clipboard(object):
 
     def get_text(self):
         ''' Get text in the clipboard '''
-        return _get_clip_text(self._clip, self._mode, self.get_mode_str())
+        if self._mode == 'none':
+            return ''
+        else:
+            return _get_clip_text(self._clip, self._mode, self.get_mode_str())
 
     def set_text(self, text):
-        ''' Set text to the clipboard '''
-        _set_clip_text(self._clip, self._mode, text, self.get_mode_str())
+        ''' Set text to the clipboard (When mode is 'none', do nothing)'''
+        if self._mode == 'none':
+            return
+        else:
+            _set_clip_text(self._clip, self._mode, text, self.get_mode_str())
 
     def connect(self, handler):
-        ''' Set clipboard changed handler '''
+        ''' Set clipboard changed handler (When mode is 'none', do nothing)'''
         self._clip.changed.connect(handler)
 
 
