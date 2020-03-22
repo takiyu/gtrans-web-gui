@@ -17,8 +17,8 @@ logger.addHandler(NullHandler())
 TOP_URL = 'https://translate.google.com/#view=home&op=translate'
 TRA_URL = 'https://translate.google.com/#view=home&op=translate&' + \
           'sl={}&tl={}&text={}'
-RES_XPATH = '/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[2]/' + \
-            'div[1]/div[2]/div/span[1]'
+RES_XPATH = '/html/body/div[2]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/' + \
+            'div[3]/div[1]/div[2]/div/span[1]/span'
 
 
 class GTransWeb(object):
