@@ -9,7 +9,7 @@ logger = getLogger(__name__)
 logger.addHandler(NullHandler())
 
 
-class ClipboardHandler(object):
+class ClipboardHandler:
     def __init__(self, clipboard):
         self._clipboard = clipboard
 
@@ -53,7 +53,7 @@ class ClipboardHandler(object):
             self._callback(src_text)
 
 
-class Clipboard(object):
+class Clipboard:
 
     def __init__(self, app):
         self._clip = app.clipboard()

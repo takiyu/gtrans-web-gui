@@ -14,22 +14,37 @@ from logging import getLogger, NullHandler
 logger = getLogger(__name__)
 logger.addHandler(NullHandler())
 
-TOP_URL = 'https://translate.google.com/#view=home&op=translate'
-TRA_URL = 'https://translate.google.com/#view=home&op=translate&' + \
-          'sl={}&tl={}&text={}'
-RES_XPATH = '/html/body/div[2]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/' + \
-            'div[3]/div[1]/div[2]/div/span[1]/span'
+
+DEFAULT_BROWSER_MODES = ['chrome', 'firefox']
+
+TOP_URLS = {'google': 'https://translate.google.com/#view=home&op=translate',
+            'deepl':  'https://www.deepl.com/translator'}
+TRA_URLS = {'google': 'https://translate.google.com/#view=home&op=translate' +
+                      '&sl={src_lang}&tl={tgt_lang}&text={src_text}',
+            'deepl':  'https://www.deepl.com/translator' +
+                      '#{src_lang}/{tgt_lang}/{src_text}'}
+RES_XPATHS = {'google': '/html/body/div[2]/div[2]/div[1]/div[2]/div[1]' +
+                        '/div[1]/div[2]/div[3]/div[1]/div[2]/div/span[1]/span',
+              'deepl': '/html/body/div[2]/div[1]/div[1]/div[4]/div[3]/div[2]' +
+                       '/p[1]/button[1][text()!=""]'}
 
 
-class GTransWeb(object):
-    def __init__(self, browser_modes=['chrome', 'firefox'], headless=True,
+class GTransWeb:
+    BACKEND_MODES = ['google', 'deepl']
+
+    def __init__(self, backend_mode='google',
+                 browser_modes=DEFAULT_BROWSER_MODES, headless=True,
                  timeout=5):
+        self._backend_mode = backend_mode
         self._browser_modes = browser_modes
         self._headless = headless
         self._timeout = timeout  # sec
 
         # Create browser first
         self._create_browser()
+
+    def get_backend_mode(self):
+        return self._backend_mode
 
     def is_headless(self):
         return self._headless
@@ -41,7 +56,7 @@ class GTransWeb(object):
         self._browser = _create_any_browser(self._browser_modes,
                                             self._headless)
         # Open top page
-        self._browser.get(TOP_URL)
+        self._browser.get(TOP_URLS[self._backend_mode])
 
     def exit(self):
         # Try to close browser
@@ -66,27 +81,38 @@ class GTransWeb(object):
         if not src_text:
             return ''
 
-        # Remove previous text
-        self._browser.get(TOP_URL)
+        backend_mode = self._backend_mode
 
-        # Wait for removing previous result
-        try:
-            WebDriverWait(self._browser, self._timeout).until(
-                    EC.invisibility_of_element_located((By.XPATH, RES_XPATH)))
-        except TimeoutException:
-            pass
+        if backend_mode == 'google':
+            # Remove previous text
+            self._browser.get(TOP_URLS[backend_mode])
 
-        # Encode for URL
-        src_text = urllib_parse.quote_plus(src_text.encode('utf-8'))
+            # Wait for removing previous result
+            try:
+                xpath = RES_XPATHS[backend_mode]
+                WebDriverWait(self._browser, self._timeout).until(
+                        EC.invisibility_of_element_located((By.XPATH, xpath)))
+            except TimeoutException:
+                pass
+
+        if backend_mode == 'google':
+            # Encode for URL
+            src_text = urllib_parse.quote_plus(src_text.encode('utf-8'))
 
         # Open translation URL
-        self._browser.get(TRA_URL.format(src_lang, tgt_lang, src_text))
+        tra_url = TRA_URLS[backend_mode]
+        self._browser.get(tra_url.format(src_lang=src_lang, tgt_lang=tgt_lang,
+                                         src_text=src_text))
 
         # Extract result by XPath
         try:
+            xpath = RES_XPATHS[backend_mode]
             result_elem = WebDriverWait(self._browser, self._timeout).until(
-                    EC.visibility_of_element_located((By.XPATH, RES_XPATH)))
-            tgt_text = result_elem.text
+                    EC.presence_of_element_located((By.XPATH, xpath)))
+            if backend_mode == 'google':
+                tgt_text = result_elem.text
+            else:
+                tgt_text = result_elem.get_attribute("innerHTML")
             return tgt_text
 
         except TimeoutException:
@@ -94,8 +120,9 @@ class GTransWeb(object):
             return ''
 
 
-class GTransWebAsync(object):
-    def __init__(self, browser_modes=['chrome', 'firefox'], headless=True,
+class GTransWebAsync:
+    def __init__(self, backend_mode='google',
+                 browser_modes=DEFAULT_BROWSER_MODES, headless=True,
                  timeout=5, queue_size=1, query_interval=0.05):
         self._gtransweb = GTransWeb(browser_modes, headless, timeout)
 

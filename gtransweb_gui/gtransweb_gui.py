@@ -20,16 +20,19 @@ class GTransWebGui(object):
         # Qt application
         self._app = QtWidgets.QApplication([sys.argv[0]])
 
+        # Translation engine (will be set by events)
+        self._gtrans = GTransWeb()
+
         # Clipboard and its handler
         self._clipboard = Clipboard(self._app)
         self._clip_handler = ClipboardHandler(self._clipboard)
         self._clip_handler.set_callback(self._on_clip_changed)
         # Main window
         self._window = Window(self._translate, self._on_clipmode_changed,
+                              self._on_backendmode_changed,
                               self._on_headless_changed,
-                              self._clipboard.get_mode_strs())
-        # Translation engine (set by event `_on_headless_changed()`)
-        self._gtrans = GTransWeb(headless=self._window.get_headless())
+                              self._clipboard.get_mode_strs(),
+                              GTransWeb.BACKEND_MODES)
         # Buffer for selection mode
         self._select_buf = CallableBuffer()
 
@@ -77,13 +80,20 @@ class GTransWebGui(object):
         ''' When GUI changed, connect to clipboard'''
         self._clipboard.set_mode(mode_str)
 
+    def _on_backendmode_changed(self, mode_str):
+        ''' When GUI changed, connect to gtrans '''
+        # Restart browser
+        self._gtrans.exit()
+        headless = self._gtrans.is_headless()
+        self._gtrans = GTransWeb(backend_mode=mode_str, headless=headless)
+
     def _on_headless_changed(self, checked):
         ''' When GUI changed, connect to gtrans '''
         checked = bool(checked)
-        if checked != self._gtrans.is_headless():
-            # Restart browser
-            self._gtrans.exit()
-            self._gtrans = GTransWeb(headless=checked)
+        # Restart browser
+        self._gtrans.exit()
+        backend = self._gtrans.get_backend_mode()
+        self._gtrans = GTransWeb(backend_mode=backend, headless=checked)
 
 
 if __name__ == '__main__':

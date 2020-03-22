@@ -17,11 +17,13 @@ LANGUAGES_INV = {v: k for k, v in LANGUAGES.items()}
 
 
 class Window(QtWidgets.QMainWindow):
-    def __init__(self, trans_func, clip_func, headless_func, clip_modes):
+    def __init__(self, trans_func, clip_func, backend_func, headless_func,
+                 clip_modes, backend_modes):
         logger.debug('New window is created')
         super(Window, self).__init__()
         self._trans_func = trans_func
         self._clip_func = clip_func
+        self._backend_func = backend_func
         self._headless_func = headless_func
 
         # Set window types
@@ -29,11 +31,12 @@ class Window(QtWidgets.QMainWindow):
         self.setWindowTitle('GtransWeb')
 
         # Create GUI parts and layout
-        self._gui_parts = GuiParts(self, clip_modes)
+        self._gui_parts = GuiParts(self, clip_modes, backend_modes)
         self._gui_layout = GuiLayout(self._gui_parts)
         # Connect event functions
         self._gui_parts.set_connections(self._trans_func, self.swap_langs,
-                                        self._clip_func, self._headless_func)
+                                        self._clip_func, self._backend_func,
+                                        self._headless_func)
 
         # GUI configuration
         self._qsettings = QtCore.QSettings('gtransweb-gui', 'window')
@@ -41,8 +44,9 @@ class Window(QtWidgets.QMainWindow):
         self._load_geometry(self._qsettings)
         self._load_langs(self._qsettings)
         self._load_clip_mode(self._qsettings)
-        self._load_headless(self._qsettings)
         self._load_overwrite(self._qsettings)
+        self._load_backend_mode(self._qsettings)
+        self._load_headless(self._qsettings)
         self._gui_layout.load_splitter_state(self._qsettings)
 
         # Set layout
@@ -101,14 +105,6 @@ class Window(QtWidgets.QMainWindow):
         idx = self._gui_parts.clip_box.findText(mode_str)
         self._gui_parts.clip_box.setCurrentIndex(idx)
 
-    def get_headless(self):
-        ''' Get headless mode from checkbox '''
-        return bool(self._gui_parts.headless_box.isChecked())
-
-    def set_headless(self, checked):
-        ''' Set headless mode to checkbox '''
-        self._gui_parts.headless_box.setChecked(bool(checked))
-
     def get_overwrite(self):
         ''' Get overwriting mode from checkbox '''
         return bool(self._gui_parts.overwrite_box.isChecked())
@@ -117,6 +113,25 @@ class Window(QtWidgets.QMainWindow):
         ''' Set overwriting mode to checkbox '''
         self._gui_parts.overwrite_box.setChecked(bool(checked))
 
+    def get_backend_mode(self):
+        ''' Get backend mode from combo '''
+        return self._gui_parts.backend_box.currentText()
+
+    def set_backend_mode(self, mode_str):
+        ''' Set backend mode to combo '''
+        idx = self._gui_parts.backend_box.findText(mode_str)
+        self._gui_parts.backend_box.setCurrentIndex(idx)
+
+    def get_headless(self):
+        ''' Get headless mode from checkbox '''
+        return bool(self._gui_parts.headless_box.isChecked())
+
+    def set_headless(self, checked):
+        ''' Set headless mode to checkbox '''
+        checked = bool(checked)
+        self._gui_parts.headless_box.setChecked(checked)
+        self._headless_func(checked)  # `setChecked` dose not cause events.
+
     # -------------------------------------------------------------------------
     # --------------------------- Overridden methods --------------------------
     def closeEvent(self, event):
@@ -124,8 +139,9 @@ class Window(QtWidgets.QMainWindow):
         self._save_geometry(self._qsettings)
         self._save_langs(self._qsettings)
         self._save_clip_mode(self._qsettings)
-        self._save_headless(self._qsettings)
         self._save_overwrite(self._qsettings)
+        self._save_backend_mode(self._qsettings)
+        self._save_headless(self._qsettings)
         self._gui_layout.save_splitter_state(self._qsettings)
 
     def keyPressEvent(self, event):
@@ -163,20 +179,9 @@ class Window(QtWidgets.QMainWindow):
         if mode is None:
             mode = 'copy'  # Set default
         self.set_clip_mode(mode)  # Set GUI
-        self._clip_func(mode)  # Pass to model first
 
     def _save_clip_mode(self, qsettings):
         qsettings.setValue('clip_mode', self.get_clip_mode())
-
-    def _load_headless(self, qsettings):
-        mode = qsettings.value('headless')
-        if mode is not None:
-            self.set_headless(mode == 'true')
-        else:
-            self.set_headless(True)  # Set default
-
-    def _save_headless(self, qsettings):
-        qsettings.setValue('headless', self.get_headless())
 
     def _load_overwrite(self, qsettings):
         mode = qsettings.value('overwrite')
@@ -188,9 +193,29 @@ class Window(QtWidgets.QMainWindow):
     def _save_overwrite(self, qsettings):
         qsettings.setValue('overwrite', self.get_overwrite())
 
+    def _load_backend_mode(self, qsettings):
+        mode = qsettings.value('backend_mode')
+        if mode is None:
+            mode = 'google'  # Set default
+        self.set_backend_mode(mode)  # Set GUI
 
-class GuiParts(object):
-    def __init__(self, parent, clip_modes):
+    def _save_backend_mode(self, qsettings):
+        qsettings.setValue('backend_mode', self.get_backend_mode())
+
+    def _load_headless(self, qsettings):
+        mode = qsettings.value('headless')
+        if mode is None:
+            mode = True  # Set default
+        else:
+            mode = (mode == 'true')
+        self.set_headless(mode)  # Set GUI
+
+    def _save_headless(self, qsettings):
+        qsettings.setValue('headless', self.get_headless())
+
+
+class GuiParts:
+    def __init__(self, parent, clip_modes, backend_modes):
         # Create Gui widget parts
         # Splitter
         self.tgt_box = QtWidgets.QTextEdit(parent)
@@ -204,21 +229,25 @@ class GuiParts(object):
 
         # 2nd row
         self.clip_box = QtWidgets.QComboBox(parent)
-        self.headless_box = QtWidgets.QCheckBox('Headless browser', parent)
         self.overwrite_box = QtWidgets.QCheckBox('Overwrite clipboard', parent)
 
+        # 3rd row
+        self.backend_box = QtWidgets.QComboBox(parent)
+        self.headless_box = QtWidgets.QCheckBox('Headless browser', parent)
+
         # Set part styles
-        self._set_styles(clip_modes)
+        self._set_styles(clip_modes, backend_modes)
 
     def set_connections(self, trans_func, swap_langs, clip_func,
-                        headless_func):
+                        backend_func, headless_func):
         # Connect functions
         self.trans_btn.clicked.connect(lambda: trans_func())
         self.swap_btn.clicked.connect(lambda: swap_langs())
         self.clip_box.currentTextChanged.connect(clip_func)
+        self.backend_box.currentTextChanged.connect(backend_func)
         self.headless_box.clicked.connect(headless_func)
 
-    def _set_styles(self, clip_modes):
+    def _set_styles(self, clip_modes, backend_modes):
         # Set GUI styles
         self.tgt_box.setReadOnly(True)
         self.tgt_box.setAcceptRichText(True)
@@ -233,10 +262,11 @@ class GuiParts(object):
         self.clip_box.addItems(clip_modes)
         self.clip_box.setFixedWidth(80)
 
-        self.headless_box.setFixedWidth(140)
+        self.backend_box.addItems(backend_modes)
+        self.backend_box.setFixedWidth(80)
 
 
-class GuiLayout(object):
+class GuiLayout:
     def __init__(self, gui_parts):
         # Create a splitter for text box
         self._splitter = QtWidgets.QSplitter(QtCore.Qt.Vertical)
@@ -260,7 +290,6 @@ class GuiLayout(object):
         # Create horizontal bottom layout (row2)
         self._row2_layout = QtWidgets.QHBoxLayout()
         self._row2_layout.addWidget(gui_parts.clip_box)
-        self._row2_layout.addWidget(gui_parts.headless_box)
         self._row2_layout.addWidget(gui_parts.overwrite_box)
         self._row2_layout.setContentsMargins(0, 0, 0, 0)
         # Warp with a widget
@@ -268,11 +297,22 @@ class GuiLayout(object):
         self._row2_widget.setLayout(self._row2_layout)
         self._row2_widget.setContentsMargins(-3, -3, -3, -3)
 
+        # Create horizontal bottom layout (row3)
+        self._row3_layout = QtWidgets.QHBoxLayout()
+        self._row3_layout.addWidget(gui_parts.backend_box)
+        self._row3_layout.addWidget(gui_parts.headless_box)
+        self._row3_layout.setContentsMargins(0, 0, 0, 0)
+        # Warp with a widget
+        self._row3_widget = QtWidgets.QWidget()
+        self._row3_widget.setLayout(self._row3_layout)
+        self._row3_widget.setContentsMargins(-3, -3, -3, -3)
+
         # Create vertical central layout
         self._central_layout = QtWidgets.QVBoxLayout()
         self._central_layout.addWidget(self._splitter)
         self._central_layout.addWidget(self._row1_widget)
         self._central_layout.addWidget(self._row2_widget)
+        self._central_layout.addWidget(self._row3_widget)
         self._central_layout.setContentsMargins(5, 5, 5, 5)
         # Warp with a widget
         self._central_widget = QtWidgets.QWidget()

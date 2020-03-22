@@ -11,7 +11,7 @@ logger = getLogger(__name__)
 logger.addHandler(NullHandler())
 
 
-class CallableBuffer(object):
+class CallableBuffer:
     def __init__(self):
         self._query = None  # Only newest one
         self._timer = False
